@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import os,sys
 from optparse import OptionParser
-from script import adb, runtimelib, rundavinci
+from script import adb, runtimelib, rundavinci, csvtoxml
+import threading
 
 def main():
     parser = OptionParser()
@@ -13,9 +14,11 @@ def main():
               help = "Ihe device ID of the test device. (optional)")
     (options, args) = parser.parse_args()
 
-    runtimelib.install_runtimelib(options.version, options.arch, options.device)
-    ##runtimelib.uninstall_runtimelib(options.device)
-    rundavinci.main()
+    #runtimelib.install_runtimelib(options.version, options.arch, options.device)
+    rundavinci.clear_davinci_test()
+    #rundavinci.run_davinci()
+
+    csvtoxml.csv_xml()
 
 if __name__ == '__main__':
     sys.exit(main())

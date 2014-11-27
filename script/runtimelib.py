@@ -2,7 +2,7 @@
 import os,sys
 from script import adb
 
-PROJECTPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),os.path.pardir)
+SUITEPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),os.path.pardir)
 
 def download_runtimelib():
     print '*** TO DO ***'
@@ -44,7 +44,7 @@ def install_runtimelib(version, arch, deviceid):
 
     try:
         uninstall_runtimelib(deviceid);
-        pkgpath = os.path.join(PROJECTPATH, 'runtimelib', version, arch, 'XWalkRuntimeLib.apk')
+        pkgpath = os.path.join(SUITEPATH, 'runtimelib', version, arch, 'XWalkRuntimeLib.apk')
         print '***** Start to install XWalkRuntimeLib.apk from', pkgpath, '*****'
         adb.install_pkg(deviceid, pkgpath)
         print '===== XWalkRuntimeLib.apk is installed successfully. ====='
