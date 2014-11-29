@@ -64,41 +64,40 @@ def csv_reader(version, deviceid, arch, filepath):
         print 'Can\'t find file: ' + filepath
 
 def insert_xml_case_result(version, deviceid, arch, q, testtime, application, step, result, failreason, reportlink):
+    parser = et.XMLParser(remove_blank_text=True)
+    tree = et.parse(q, parser)
+    #root = tree.getroot()
+    set = tree.find('//set')
 
-        parser = et.XMLParser(remove_blank_text=True)
-        tree = et.parse(q, parser)
-        #root = tree.getroot()
-        set = tree.find('//set')
+    t = failreason + ' ' + reportlink if failreason else reportlink
+    if result != 'PASS':
+        t = t
+    else:
+        t = reportlink
 
-        t = failreason + ' ' + reportlink if failreason else reportlink
-        if result != 'PASS':
-            t = t
-        else:
-            t = reportlink
-
-        testcase = et.SubElement(set, 'testcase')
-        testcase.attrib['component'] = common.parse_config_json(CONFIGJSONPATH, 'test_suite_category') + '/' + common.parse_config_json(CONFIGJSONPATH, 'test_suite_module')
-        testcase.attrib['execution_type'] = 'auto'
-        testcase.attrib['id'] = 'wrt_sample_app_'+ application.lower() + '_' + step
-        testcase.attrib['purpose'] = 'Verify ' + step + ' step of ' + application.lower() + ' works correctly'
-        testcase.attrib['result'] = result
-        #testcase.attrib['comment'] = t
-        description = et.SubElement(testcase, 'description')
-        pre_condition = et.SubElement(description, 'pre_condition')
-        pre_condition.text = ''
-        test_script_entry = et.SubElement(description, 'test_script_entry')
-        test_script_entry.text = 'run.py'
-        result_info = et.SubElement(testcase, 'result_info')
-        actual_result = et.SubElement(result_info, 'actual_result')
-        actual_result.text = result
-        start = et.SubElement(result_info, 'start')
-        start.text = testtime
-        end = et.SubElement(result_info, 'end')
-        stdout = et.SubElement(result_info, 'stdout')
-        stdout.text = t
-        stderr = et.SubElement(result_info, 'stderr')
-        #stderr.text = failreason
-        tree.write(q, pretty_print=True, xml_declaration=True, encoding='utf-8')
+    testcase = et.SubElement(set, 'testcase')
+    testcase.attrib['component'] = common.parse_config_json(CONFIGJSONPATH, 'test_suite_category') + '/' + common.parse_config_json(CONFIGJSONPATH, 'test_suite_module')
+    testcase.attrib['execution_type'] = 'auto'
+    testcase.attrib['id'] = 'wrt_sample_app_'+ application.lower() + '_' + step
+    testcase.attrib['purpose'] = 'Verify ' + step + ' step of ' + application.lower() + ' works correctly'
+    testcase.attrib['result'] = result
+    #testcase.attrib['comment'] = t
+    description = et.SubElement(testcase, 'description')
+    pre_condition = et.SubElement(description, 'pre_condition')
+    pre_condition.text = ''
+    test_script_entry = et.SubElement(description, 'test_script_entry')
+    test_script_entry.text = 'run.py'
+    result_info = et.SubElement(testcase, 'result_info')
+    actual_result = et.SubElement(result_info, 'actual_result')
+    actual_result.text = result
+    start = et.SubElement(result_info, 'start')
+    start.text = testtime
+    end = et.SubElement(result_info, 'end')
+    stdout = et.SubElement(result_info, 'stdout')
+    stdout.text = t
+    stderr = et.SubElement(result_info, 'stderr')
+    #stderr.text = failreason
+    tree.write(q, pretty_print=True, xml_declaration=True, encoding='utf-8')
 
 def generate_xml_report(version, deviceid, arch, pathname):
     if not version:
