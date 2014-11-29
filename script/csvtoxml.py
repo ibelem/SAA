@@ -142,4 +142,4 @@ def generate_xml_report(version, deviceid, arch, pathname):
     file.write(pathname, pretty_print=True, xml_declaration=True, encoding='utf-8')
 
 def csv_xml(version, deviceid, arch):
-    csv_reader(version, deviceid, arch, os.path.join(TESTPATH,'Smoke_Test_Report.csv'))
+    csv_reader(version, deviceid, arch, os.path.join(TESTPATH,common.parse_config_json(CONFIGJSONPATH, 'davinci_csv_file')))
