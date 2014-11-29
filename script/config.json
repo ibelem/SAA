@@ -13,6 +13,6 @@
   "test_result_xml_dir": "C:/SampleAppTest/tests",
   "test_result_xml_name": "wrt-top-app-android-tests-result.xml",
   "device": [
-    {"device_id":"MedfieldC3567E1E", "device_name":"ZTE Geek V975"}
+    {"device_id":"MedfieldC3567E1E", "device_name":"ZTE Geek V975", "device_arch": "x86"}
   ]
 }

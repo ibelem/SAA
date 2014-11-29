@@ -60,23 +60,7 @@ def uninstall_runtimelib(deviceid):
             print '##### Failed to uninstall '+ runtimelibapk +'. ##### ',ex
             sys.exit(0)
 
-def install_runtimelib(version, arch, deviceid):
-    if version:
-        print 'Version:', version
-    else:
-        print '##### Version option is not defined. #####\nPlease use -v or --version with the build number of '+ runtimelibapk +'.'
-        sys.exit(0)
-    if arch:
-        arch = arch.lower()
-        print 'Architecture:',arch
-    else:
-        print '#####Architecture option is not defined. #####\nPlease use -a or --arch with values x86 or arm.'
-        sys.exit(0)
-    if deviceid:
-        print 'Device:',deviceid
-    else:
-        print '----- Device ID option is not defined. -----\nConnect to default device to test.'
-
+def install_runtimelib(version, deviceid, arch):
     try:
         uninstall_runtimelib(deviceid);
         pkgpath = os.path.join(SUITEPATH, 'runtimelib', version, arch, runtimelibapk)
@@ -84,6 +68,6 @@ def install_runtimelib(version, arch, deviceid):
         adb.install_pkg(deviceid, pkgpath)
         print '===== '+ runtimelibapk +' is installed successfully. ====='
     except Exception, ex:
-        print '##### Failed to install '+ runtimelibapk +'. #####\n',ex
+        print '##### Failed to install '+ runtimelibapk +'. #####\n', ex
         sys.exit(0)
 

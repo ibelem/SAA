@@ -81,9 +81,10 @@ def parse_config_json(pathname, field):
     d = json.loads(reader, strict=False)
 
     if field == 'device_id' or field == 'device_name':
+        t = []
         for var in d['device']:
-            value = var[field]
-            return value
+            t.append(var[field])
+        return t
     else:
         for var in d:
             value = d[field]

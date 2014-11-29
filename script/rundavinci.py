@@ -42,26 +42,26 @@ SCRIPTPATH = os.path.join(SUITEPATH,'script')
 CONFIGJSONPATH = os.path.join(SCRIPTPATH, 'config.json')
 DAVINCIPATH = common.parse_config_json(CONFIGJSONPATH, 'davinci_path')
 
-def clear_davinci_test():
+def clear_davinci_test(deviceid):
     print '***** Clean up files in test suite path and apk test path *****'
     try:
-        for i in ['.qs','.xml','.txt']:
-            common.del_files(TESTPATH, i)
-        for j in ['.txt','.log']:
-            common.del_files(SUITEPATH, j)
-        print '===== Delete file: ' + '.qs, .xml, .csv, .txt, .log' + i + ' in ' + TESTPATH + ' ====='
         davinci_rnr_log_dir = common.parse_config_json(CONFIGJSONPATH, 'davinci_rnr_log_dir')
         if common.find_dir(os.path.join(TESTPATH, davinci_rnr_log_dir)):
             common.del_dir(os.path.join(TESTPATH, davinci_rnr_log_dir))
             print '===== Delete folder: ' + os.path.join(TESTPATH, davinci_rnr_log_dir) + ' ====='
-        device_id_dir = common.parse_config_json(CONFIGJSONPATH, 'device_id')
+        device_id_dir = deviceid
         if common.find_dir(os.path.join(TESTPATH, device_id_dir)):
             common.del_dir(os.path.join(TESTPATH, device_id_dir))
             print '===== Delete folder: ' + os.path.join(TESTPATH, device_id_dir) + ' ====='
+        for i in ['.qs','.txt','.xml','.csv']:
+            common.del_files(TESTPATH, i)
+        for j in ['.txt','.log']:
+            common.del_files(SUITEPATH, j)
+        print '===== Delete file: ' + '.qs, .xml, .csv, .txt, .log' + i + ' in ' + TESTPATH + ' ====='
     except Exception, ex:
         print ex,'\n##### Failed to delete files or folder, they\'ve been removed or don\'t exist. #####'
 
-def run_davinci():
+def run_davinci(version, deviceid, arch):
     #cmd = DAVINCIPATH + 'Scripts/run.bat ' + DAVINCIPATH + 'bin ' + TESTPATH
 #    cmd = DAVINCIPATH + 'Scripts/run.bat'
 #    t = MyThread(cmd)

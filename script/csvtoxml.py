@@ -41,43 +41,66 @@ TESTPATH = os.path.join(SUITEPATH,'tests')
 SCRIPTPATH = os.path.join(SUITEPATH,'script')
 CONFIGJSONPATH = os.path.join(SCRIPTPATH, 'config.json')
 
-def csv_reader(version, filepath):
+def csv_reader(version, deviceid, arch, filepath):
     if common.find_file(filepath):
 
-        p = os.path.join(TESTPATH, common.parse_config_json(CONFIGJSONPATH, 'device_id'))
-        print p
+        p = os.path.join(TESTPATH, deviceid)
         common.mk_dir(p)
         q = os.path.join(p, common.parse_config_json(CONFIGJSONPATH, 'test_result_xml_name'))
-        generate_xml_report(version, q)
+        generate_xml_report(version, deviceid, arch, q)
 
         dreader = csv.DictReader(open(filepath))
         #print len(list(dreader))
 
-        print q
-        tree = et.parse(q)
+        for c in dreader:
+            reportlink = str(c['ReportLink']).replace('=HYPERLINK("','').replace('")','').replace('\\\\','\\')
+            print c['Install'], c['Launch'], c['Random'], c['Back'], c['Uninstall'], c['Result'], c['FailReason']
+            for i in ['Install', 'Launch', 'Random', 'Back', 'Uninstall']:
+                result = c[i]
+                if result.lower() == 'skip':
+                    result = 'BLOCK'
+                insert_xml_case_result(version, deviceid, arch, q, c['TestTime'].strip(), c['Application'].lower().replace('.apk',''), i.upper(), result, c['FailReason'].strip(), reportlink.strip())
+    else:
+        print 'Can\'t find file: ' + filepath
 
-        root = tree.getroot()
-        set = er.getElement('set')
+def insert_xml_case_result(version, deviceid, arch, q, testtime, application, step, result, failreason, reportlink):
+
+        parser = et.XMLParser(remove_blank_text=True)
+        tree = et.parse(q, parser)
+        #root = tree.getroot()
+        set = tree.find('//set')
+
+        t = failreason + ' ' + reportlink if failreason else reportlink
+        if result != 'PASS':
+            t = t
+        else:
+            t = reportlink
 
         testcase = et.SubElement(set, 'testcase')
         testcase.attrib['component'] = common.parse_config_json(CONFIGJSONPATH, 'test_suite_category') + '/' + common.parse_config_json(CONFIGJSONPATH, 'test_suite_module')
         testcase.attrib['execution_type'] = 'auto'
-        testcase.attrib['id'] = 'wrt'
-        testcase.attrib['purpose'] = 'auto'
-        testcase.attrib['result'] = 'wrt'
+        testcase.attrib['id'] = 'wrt_sample_app_'+ application.lower() + '_' + step
+        testcase.attrib['purpose'] = 'Verify ' + step + ' step of ' + application.lower() + ' works correctly'
+        testcase.attrib['result'] = result
+        #testcase.attrib['comment'] = t
+        description = et.SubElement(testcase, 'description')
+        pre_condition = et.SubElement(description, 'pre_condition')
+        pre_condition.text = ''
+        test_script_entry = et.SubElement(description, 'test_script_entry')
+        test_script_entry.text = 'run.py'
+        result_info = et.SubElement(testcase, 'result_info')
+        actual_result = et.SubElement(result_info, 'actual_result')
+        actual_result.text = result
+        start = et.SubElement(result_info, 'start')
+        start.text = testtime
+        end = et.SubElement(result_info, 'end')
+        stdout = et.SubElement(result_info, 'stdout')
+        stdout.text = t
+        stderr = et.SubElement(result_info, 'stderr')
+        #stderr.text = failreason
+        tree.write(q, pretty_print=True, xml_declaration=True, encoding='utf-8')
 
-        for c in dreader:
-            print c['TestTime'], c['DeviceName'], c['Application'], c['Package'], c['Activity']
-            print c['Install'], c['Launch'], c['Random'], c['Back'], c['Uninstall'], c['Result'], c['FailReason']
-            print str(c['ReportLink']).replace('=HYPERLINK("','').replace('")','').replace('\\\\','\\')
-
-        file = et.ElementTree(root)
-        file.write(q, pretty_print=True, xml_declaration=True, encoding='utf-8')
-
-    else:
-        print 'Can\'t find file: ' + filepath
-
-def generate_xml_report(version, pathname):
+def generate_xml_report(version, deviceid, arch, pathname):
     if not version:
         version = ''
 
@@ -89,9 +112,9 @@ def generate_xml_report(version, pathname):
 
     environment = et.SubElement(root, 'environment')
     environment.attrib['build_id'] = version
-    environment.attrib['device_id'] = common.parse_config_json(CONFIGJSONPATH, 'device_id')
+    environment.attrib['device_id'] = deviceid
     environment.attrib['device_model'] = ''
-    environment.attrib['device_name'] = common.parse_config_json(CONFIGJSONPATH, 'device_name')
+    environment.attrib['device_name'] = common.parse_config_json(CONFIGJSONPATH, 'device_name')[0]
     environment.attrib['host'] = socket.gethostname()
     environment.attrib['lite_version'] = ''
     environment.attrib['manufacturer'] = ''
@@ -118,5 +141,5 @@ def generate_xml_report(version, pathname):
     file = et.ElementTree(root)
     file.write(pathname, pretty_print=True, xml_declaration=True, encoding='utf-8')
 
-def csv_xml(version):
-    csv_reader(version, os.path.join(TESTPATH,'Smoke_Test_Report.csv'))
+def csv_xml(version, deviceid, arch):
+    csv_reader(version, deviceid, arch, os.path.join(TESTPATH,'Smoke_Test_Report.csv'))

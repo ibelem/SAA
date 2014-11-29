@@ -14,7 +14,7 @@
 #   may be used to endorse or promote products derived from this work without
 #   specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY INTEL CORPORATION "AS IS"
+# THIS SOFTWARE IS PROVIDED BY INTEL CORPORATION 'AS IS'
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 # ARE DISCLAIMED. IN NO EVENT SHALL INTEL CORPORATION BE LIABLE FOR ANY DIRECT,
@@ -31,27 +31,59 @@
 import os,sys
 from datetime import *
 from optparse import OptionParser
-from script import adb, runtimelib, rundavinci, csvtoxml, gl
+from script import common, adb, runtimelib, rundavinci, csvtoxml, gl
 import threading
+
+SUITEPATH = os.path.dirname(os.path.abspath(__file__))
+TESTPATH = os.path.join(SUITEPATH,'tests')
+SCRIPTPATH = os.path.join(SUITEPATH,'script')
+CONFIGJSONPATH = os.path.join(SCRIPTPATH, 'config.json')
+
+runtimelibapk = common.parse_config_json(CONFIGJSONPATH, 'runtimelib_apk')
+
+def run(version, deviceid, arch):
+    #rundavinci.clear_davinci_test(deviceid)
+    runtimelib.install_runtimelib(version, deviceid, arch)
+    #rundavinci.run_davinci(version, deviceid, arch)
+    #csvtoxml.csv_xml(version, deviceid, arch)
+
+def option_check(version, deviceid, arch):
+    if version:
+        print 'Version:', version
+    else:
+        print '##### Version option is not defined. #####\nPlease use -v or --version with the build number of '+ runtimelibapk +'.'
+        sys.exit(0)
+
+    if arch and deviceid:
+        arch = arch.lower()
+        print 'Device:', deviceid
+        print 'Architecture:', arch
+        run(version, deviceid, arch)
+    elif arch and not deviceid:
+        print '##### Device id option is not defined. #####\nUse \'python run.py -h\' get more information.'
+    elif deviceid and not arch:
+        print '##### Architecture option is not defined. #####\nUse \'python run.py -h\' get more information.'
+    else:
+        for i in common.parse_config_json(CONFIGJSONPATH, 'device'):
+            print 'Device:', i['device_id']
+            print 'Architecture:', i['device_arch']
+            print 'Name:', i['device_name']
+            run(version, i['device_id'], i['device_arch'])
 
 def main():
     parser = OptionParser()
-    parser.add_option("-v", "--version", dest="version",
-                  help = "The build number of RuntimeLib.apk")
-    parser.add_option("-a", "--arch", dest="arch",
-                  help = "Ihe architecture (x86 or arm) of RuntimeLib.apk")
-    parser.add_option("-d", "--device", dest="device",
-              help = "Ihe device ID of the test device. (optional)")
+    parser.add_option('-v', '--version', dest='version',
+                  help = '(required) build number of ' + runtimelibapk + '.')
+    parser.add_option('-a', '--arch', dest='arch',
+                  help = '(optional) architecture (x86 or arm) of '+ runtimelibapk +'. -d is required if you use it.')
+    parser.add_option('-d', '--device', dest='device',
+              help = '(optional) device ID of the test device. -a is required if you use it.')
     (options, args) = parser.parse_args()
 
     d = datetime.now()
     gl.__starttime__ = d.strftime('%Y-%m-%d %H:%M:%S')
 
-    #runtimelib.install_runtimelib(options.version, options.arch, options.device)
-    #rundavinci.clear_davinci_test()
-    #rundavinci.run_davinci()
-
-    csvtoxml.csv_xml(options.version)
+    option_check(options.version, options.device, options.arch)
 
 if __name__ == '__main__':
     sys.exit(main())
