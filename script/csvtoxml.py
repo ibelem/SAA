@@ -43,7 +43,6 @@ CONFIGJSONPATH = os.path.join(SCRIPTPATH, 'config.json')
 
 def csv_reader(version, deviceid, arch, filepath):
     if common.find_file(filepath):
-
         p = os.path.join(TESTPATH, deviceid)
         common.mk_dir(p)
         q = os.path.join(p, common.parse_config_json(CONFIGJSONPATH, 'test_result_xml_name'))

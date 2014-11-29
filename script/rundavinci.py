@@ -62,7 +62,7 @@ def clear_davinci_test(deviceid):
         print ex,'\n##### Failed to delete files or folder, they\'ve been removed or don\'t exist. #####'
 
 def run_davinci(version, deviceid, arch):
-    #cmd = DAVINCIPATH + 'Scripts/run.bat ' + DAVINCIPATH + 'bin ' + TESTPATH
+#    cmd = DAVINCIPATH + 'Scripts/run.bat ' + DAVINCIPATH + 'bin ' + TESTPATH
 #    cmd = DAVINCIPATH + 'Scripts/run.bat'
 #    t = MyThread(cmd)
 #    t.start()

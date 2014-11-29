@@ -79,7 +79,6 @@ def parse_config_json(pathname, field):
     fp = open(pathname)
     reader = fp.read()
     d = json.loads(reader, strict=False)
-
     if field == 'device_id' or field == 'device_name':
         t = []
         for var in d['device']:
