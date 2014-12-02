@@ -29,11 +29,12 @@
 #        Zhang,Belem <belem.zhang@intel.com>
 
 import os,sys
-import socket
+import socket, codecs
 from datetime import *
 import csv
 import common, gl
 from lxml import etree as et
+
 # https://pypi.python.org/pypi/lxml/3.4.1
 
 SUITEPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),os.path.pardir)
@@ -41,9 +42,30 @@ TESTPATH = os.path.join(SUITEPATH,'tests')
 SCRIPTPATH = os.path.join(SUITEPATH,'script')
 CONFIGJSONPATH = os.path.join(SCRIPTPATH, 'config.json')
 
-def csv_reader(version, deviceid, arch, filepath):
+def copy_result(deviceid, exetime):
+    test_result_dir = common.parse_config_json(CONFIGJSONPATH, 'test_result_dir')
+    try:
+        common.copy_tree(os.path.join(TESTPATH, deviceid), os.path.join(test_result_dir, deviceid))
+    except Exception, ex:
+        common.copy_files(os.path.join(TESTPATH, deviceid), os.path.join(test_result_dir, deviceid))
+
+    tr = 'TestResult_' + exetime
+    try:
+        common.copy_tree(os.path.join(TESTPATH, tr), os.path.join(test_result_dir, tr))
+    except Exception, ex:
+        common.copy_files(os.path.join(TESTPATH, tr), os.path.join(test_result_dir, tr))
+
+    rnr = common.parse_config_json(CONFIGJSONPATH, 'davinci_rnr_log_dir')
+    try:
+        common.copy_tree(os.path.join(TESTPATH, rnr), os.path.join(test_result_dir, rnr))
+    except Exception, ex:
+        common.copy_files(os.path.join(TESTPATH, rnr), os.path.join(test_result_dir, rnr))
+
+def csv_reader(version, deviceid, arch, filepath, exetime):
     if common.find_file(filepath):
         p = os.path.join(TESTPATH, deviceid)
+        common.mk_dir(p)
+        p = os.path.join(TESTPATH, deviceid, exetime)
         common.mk_dir(p)
         q = os.path.join(p, common.parse_config_json(CONFIGJSONPATH, 'test_result_xml_name'))
         generate_xml_report(version, deviceid, arch, q)
@@ -53,12 +75,15 @@ def csv_reader(version, deviceid, arch, filepath):
 
         for c in dreader:
             reportlink = str(c['ReportLink']).replace('=HYPERLINK("','').replace('")','').replace('\\\\','\\')
+            #testtime = c['TestTime']
+            testtime = ''
             print c['Install'], c['Launch'], c['Random'], c['Back'], c['Uninstall'], c['Result'], c['FailReason']
             for i in ['Install', 'Launch', 'Random', 'Back', 'Uninstall']:
                 result = c[i]
                 if result.lower() == 'skip':
                     result = 'BLOCK'
-                insert_xml_case_result(version, deviceid, arch, q, c['TestTime'].strip(), c['Application'].lower().replace('.apk',''), i.upper(), result, c['FailReason'].strip(), reportlink.strip())
+                insert_xml_case_result(version, deviceid, arch, q, testtime, c['Application'].lower().replace('.apk',''), i.upper(), result, c['FailReason'].strip(), reportlink.strip())
+        copy_result(deviceid, exetime)
     else:
         print 'Can\'t find file: ' + filepath
 
@@ -140,4 +165,9 @@ def generate_xml_report(version, deviceid, arch, pathname):
     file.write(pathname, pretty_print=True, xml_declaration=True, encoding='utf-8')
 
 def csv_xml(version, deviceid, arch):
-    csv_reader(version, deviceid, arch, os.path.join(TESTPATH,common.parse_config_json(CONFIGJSONPATH, 'davinci_csv_file')))
+    davinci_csv_file = common.parse_config_json(CONFIGJSONPATH, 'davinci_csv_file')
+    if common.find_glob_path(TESTPATH + '/TestResult_*'):
+        for i in common.find_glob_path(TESTPATH + '/TestResult_*'):
+            exetime = i.replace(TESTPATH, '').replace('\\', '').replace('TestResult_', '')
+            csv_reader(version, deviceid, arch, os.path.join(i, davinci_csv_file), exetime)
+            print '===== The test result xml of '+ os.path.join(i, 'davinci_csv_file') +' has been created. ====='

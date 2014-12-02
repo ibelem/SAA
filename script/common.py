@@ -30,9 +30,10 @@
 #        Zhang,Belem <belem.zhang@intel.com>
 
 import os, sys
-import re
-import shutil
+import re, codecs
+import shutil, glob
 import json
+
 
 def multi_replace(string, dic):
     rx = re.compile('|'.join(map(re.escape, dic)))
@@ -67,27 +68,63 @@ def mk_dir(path):
     if not find_dir(path):
         os.mkdir(path)
 
+#class Error(Exception): False
 def _find(pathname, matchFunc=os.path.isfile):
     for dirname in sys.path:
         candidate = os.path.join(dirname, pathname)
         if matchFunc(candidate):
             return candidate
-        else:
-            return False
+    #raise Error("##### Can't find file %s" % pathname)
+
+def find_glob_path(filepath):
+    return glob.glob(filepath)
+
+def remove_glob_path(filepath):
+    if find_glob_path(filepath):
+        for path in glob.glob(filepath):
+            os.remove(path)
+
+def copy_tree(sourceDir,  targetDir):
+    shutil.copytree(sourceDir,  targetDir)
+
+def copy_file(sourceDir,  targetDir):
+    shutil.copy(sourceDir,  targetDir)
+
+def copy_files(sourceDir,  targetDir):
+     if sourceDir.find(".git") > 0:
+         return
+     for file in os.listdir(sourceDir):
+         sourceFile = os.path.join(sourceDir,  file)
+         targetFile = os.path.join(targetDir,  file)
+         if os.path.isfile(sourceFile):
+             if not os.path.exists(targetDir):
+                 os.makedirs(targetDir)
+             if not os.path.exists(targetFile) or(os.path.exists(targetFile) and (os.path.getsize(targetFile) != os.path.getsize(sourceFile))):
+                     open(targetFile, "wb").write(open(sourceFile, "rb").read())
+         if os.path.isdir(sourceFile):
+             First_Directory = False
+             copy_files(sourceFile, targetFile)
 
 def parse_config_json(pathname, field):
     fp = open(pathname)
     reader = fp.read()
     d = json.loads(reader, strict=False)
-    if field == 'device_id' or field == 'device_name':
+    if field.startswith('device_'):
         t = []
         for var in d['device']:
             t.append(var[field])
         return t
+    elif field.startswith('davinci_'):
+        return d['davinci'][field]
+    elif field.startswith('runtimelib_'):
+        return d['runtimelib'][field]
+    elif field.startswith('test_suite_'):
+        return d['test_suite'][field]
+    elif field.startswith('test_result_'):
+        return d['test_result'][field]
     else:
         for var in d:
             value = d[field]
             return value
-
 
 

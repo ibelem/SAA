@@ -42,8 +42,8 @@ CONFIGJSONPATH = os.path.join(SCRIPTPATH, 'config.json')
 runtimelibapk = common.parse_config_json(CONFIGJSONPATH, 'runtimelib_apk')
 
 def run(version, deviceid, arch):
-    #rundavinci.clear_davinci_test(deviceid)
-    runtimelib.install_runtimelib(version, deviceid, arch)
+    rundavinci.clear_davinci_test(deviceid)
+    #runtimelib.install_runtimelib(version, deviceid, arch)
     #rundavinci.run_davinci(version, deviceid, arch)
     #csvtoxml.csv_xml(version, deviceid, arch)
 
@@ -74,6 +74,8 @@ def main():
     parser = OptionParser()
     parser.add_option('-v', '--version', dest='version',
                   help = '(required) build number of ' + runtimelibapk + '.')
+    #parser.add_option('-c', '--clear', dest='clear',
+    #            help = '(optional) clear the test suite environment from the beginning.')
     parser.add_option('-a', '--arch', dest='arch',
                   help = '(optional) architecture (x86 or arm) of '+ runtimelibapk +'. -d is required if you use it.')
     parser.add_option('-d', '--device', dest='device',

@@ -1,17 +1,25 @@
 {
   "name": "Crosswalk Top App Test from Google Play",
   "version": "1.0",
-  "davinci_path": "C:/Intel/BiTS/DaVinci/",
-  "davinci_rnr_log_dir": "_DaVinci_RnR_Logs",
-  "davinci_csv_file": "Smoke_Test_Report.csv",
-  "runtimelib_package": "org.xwalk.core",
-  "runtimelib_apk": "XWalkRuntimeLib.apk",
-  "test_suite_category": "Sample Apps",
-  "test_suite_module": "Sample Apps",
-  "test_suite_set_name": "Sample Apps",
-  "test_suite_name": "wrt-top-app-android-tests",
-  "test_result_xml_dir": "C:/SampleAppTest/tests",
-  "test_result_xml_name": "wrt-top-app-android-tests-result.xml",
+  "davinci": {
+    "davinci_path": "C:/Intel/BiTS/DaVinci/",
+    "davinci_rnr_log_dir": "_DaVinci_RnR_Logs",
+    "davinci_csv_file": "Smoke_Test_Report.csv"
+  },
+  "runtimelib": {
+    "runtimelib_package": "org.xwalk.core",
+    "runtimelib_apk": "XWalkRuntimeLib.apk"
+  },
+  "test_suite": {
+    "test_suite_category": "Sample Apps",
+    "test_suite_module": "Sample Apps",
+    "test_suite_set_name": "Sample Apps",
+    "test_suite_name": "wrt-top-app-android-tests"
+  },
+  "test_result": {
+    "test_result_dir": "C:/SampleAppTest/result",
+    "test_result_xml_name": "wrt-top-app-android-tests-result.xml"
+  },
   "device": [
     {"device_id":"MedfieldC3567E1E", "device_name":"ZTE Geek V975", "device_arch": "x86"}
   ]
