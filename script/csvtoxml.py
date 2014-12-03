@@ -171,3 +171,5 @@ def csv_xml(version, deviceid, arch):
             exetime = i.replace(TESTPATH, '').replace('\\', '').replace('TestResult_', '')
             csv_reader(version, deviceid, arch, os.path.join(i, davinci_csv_file), exetime)
             print '===== The test result xml of '+ os.path.join(i, 'davinci_csv_file') +' has been created. ====='
+    else:
+        print 'No csv files found, please rerun the test.'

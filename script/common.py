@@ -127,4 +127,12 @@ def parse_config_json(pathname, field):
             value = d[field]
             return value
 
+def replace_test_in_file(text, replacetext, inputfile, outputfile):
+    input_file = open(inputfile)
+    output_file = open(outputfile, 'w')
+    for s in input_file:
+        output_file.write(s.replace(text, replacetext))
+    output.close()
+    input.close()
+
 

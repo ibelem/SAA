@@ -75,6 +75,13 @@ def precondition_davinci():
     if common.find_file(os.path.join(DAVINCIPATH, 'Scripts', 'user_input2.txt')):
         common.copy_file(os.path.join(DAVINCIPATH, 'Scripts', 'user_input2.txt'), os.path.join(SUITEPATH, 'user_input2.txt'))
 
+#    davinci_device_environment_set = common.parse_config_json(CONFIGJSONPATH, 'davinci_device_environment_set')
+#    if davinci_device_environment_set == 'false':
+#        print 'yes'
+#        qs = os.path.join(DAVINCIPATH, 'Scripts', 'run_qs.py')
+#        common.replace_test_in_file('def PrepareBeforeSmokeTest(device_name):','def PrepareBeforeSmokeTest(device_name):\nreturn 1', qs, qs)
+
+
 def run_davinci(version, deviceid, arch):
 #    cmd = DAVINCIPATH + 'Scripts/run.bat ' + DAVINCIPATH + 'bin ' + TESTPATH
 #    cmd = DAVINCIPATH + 'Scripts/run.bat'

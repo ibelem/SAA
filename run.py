@@ -43,9 +43,9 @@ runtimelibapk = common.parse_config_json(CONFIGJSONPATH, 'runtimelib_apk')
 
 def run(version, deviceid, arch):
     rundavinci.clear_davinci_test(deviceid)
-    #runtimelib.install_runtimelib(version, deviceid, arch)
-    #rundavinci.run_davinci(version, deviceid, arch)
-    #csvtoxml.csv_xml(version, deviceid, arch)
+    runtimelib.install_runtimelib(version, deviceid, arch)
+    rundavinci.run_davinci(version, deviceid, arch)
+    csvtoxml.csv_xml(version, deviceid, arch)
 
 def option_check(version, deviceid, arch):
     if version:
@@ -81,6 +81,8 @@ def main():
     parser.add_option('-d', '--device', dest='device',
               help = '(optional) device ID of the test device. -a is required if you use it.')
     (options, args) = parser.parse_args()
+
+    print args
 
     d = datetime.now()
     gl.__starttime__ = d.strftime('%Y-%m-%d %H:%M:%S')

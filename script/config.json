@@ -4,7 +4,8 @@
   "davinci": {
     "davinci_path": "C:/Intel/BiTS/DaVinci/",
     "davinci_rnr_log_dir": "_DaVinci_RnR_Logs",
-    "davinci_csv_file": "Smoke_Test_Report.csv"
+    "davinci_csv_file": "Smoke_Test_Report.csv",
+    "davinci_device_environment_set": "false"
   },
   "runtimelib": {
     "runtimelib_package": "org.xwalk.core",
@@ -17,7 +18,7 @@
     "test_suite_name": "wrt-top-app-android-tests"
   },
   "test_result": {
-    "test_result_dir": "C:/SampleAppTest/result",
+    "test_result_dir": "C:/Users/zhangmin/Desktop/AA A",
     "test_result_xml_name": "wrt-top-app-android-tests-result.xml"
   },
   "device": [
