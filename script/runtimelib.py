@@ -44,30 +44,29 @@ def download_runtimelib():
 
 def check_runtimelib(deviceid):
     if runtimelibpkg in adb.list_pkg(deviceid):
-        print '===== '+ runtimelibapk +' was installed. ====='
+        print runtimelibapk +' was installed.'
         return True
     else:
-        print '===== '+ runtimelibapk +' is not installed. ====='
+        print runtimelibapk +' is not installed.'
         return False
 
 def uninstall_runtimelib(deviceid):
     if check_runtimelib(deviceid):
         try:
-            print '***** Start to uninstall existed '+ runtimelibapk +'. *****'
             adb.uninstall_pkg(deviceid, runtimelibpkg)
-            print '===== Uninstall '+ runtimelibapk +' successfully. ====='
+            print 'Uninstall '+ runtimelibapk +' ----- PASS.'
         except Exception, ex:
-            print '##### Failed to uninstall '+ runtimelibapk +'. ##### ',ex
+            print 'Uninstall '+ runtimelibapk +'----- FAIL.',ex
             sys.exit(0)
 
 def install_runtimelib(version, deviceid, arch):
     try:
         uninstall_runtimelib(deviceid);
         pkgpath = os.path.join(SUITEPATH, 'runtimelib', version, arch, runtimelibapk)
-        print '***** Start to install '+ runtimelibapk +' from', pkgpath, '*****'
+        print 'Install '+ runtimelibapk +' from', pkgpath
         adb.install_pkg(deviceid, pkgpath)
-        print '===== '+ runtimelibapk +' is installed successfully. ====='
+        print 'Install '+ runtimelibapk +' ----- PASS.'
     except Exception, ex:
-        print '##### Failed to install '+ runtimelibapk +'. #####\n', ex
+        print 'Install '+ runtimelibapk +'----- FAIL.\n', ex
         sys.exit(0)
 

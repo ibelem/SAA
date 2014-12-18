@@ -37,36 +37,57 @@ Android Settings:
                 Enable and keep connected
     6.    Charging:
                 Keep charging.
+    7.    Set System language to English
 
 config.json:
 ===================
-Update key fields of config.json in /topapp-android-tests/script/ folder:
+Update key fields of config.json in /webapp-monkey-android-tests/script/ folder:
 
 {
   "davinci": {
     "davinci_path": "C:/Intel/BiTS/DaVinci/",
+    "davinci_device_environment_set": "true",
+    "davinci_test_timeout": "300",
+    "davinci_test_rerun_max": "1",
+    "davinci_test_action_number": "10",
+    "davinci_test_click_percentage": "82",
+    "davinci_test_swipe_percentage": "18"
   },
   "runtimelib": {
     "runtimelib_package": "org.xwalk.core",
     "runtimelib_apk": "XWalkRuntimeLib.apk"
   },
+  "runtimelib_test_build": [
+    {"rtlib_test_build": "11.39.265.0"},
+    {"rtlib_test_build": "11.39.251.0"}
+  ],
   "test_result": {
-    "test_result_dir": "C:/SampleAppTest/result",
-    "test_result_xml_name": "wrt-top-app-android-tests-result.xml"
+    "test_result_dir": "C:/Users/zhangmin/Desktop/CCC",
+    "test_result_xml_name": "webapp-monkey-android-tests-result.xml"
   },
   "device": [
-    {"device_id":"MedfieldC3567E1E", "device_name":"ZTE Geek V975", "device_arch": "x86"}
+    {"device_id":"E6OKCY410605", "device_name":"ASUS Memo Pad K001", "device_arch": "x86"}
   ]
 }
 
+* List 2 or more runtimelib_test_build will run the monkey tests on 2 or more RuntimeLib builds orderly.
+* Default davinci_test_timeout value is 600.
+* Default davinci_test_rerun_max value is 3.
+* Default davinci_test_action_number value is 10. Modify the value will cause the whole testing time changes.
+* Make sure: davinci_test_click_percentage value + davinci_test_swipe_percentage value == 100
+
 How to Run
 ========================================================
-1. cd topapp-android-tests
-2. python run.py -v 11.39.251.0
+1. Put corresponding RuntimeLib.apk in /runtimelib/<build>/<arch> folders
+2. cd webapp-monkey-android-tests
+3. python run.py
+   //Make sure the version (test build) of RuntimeLib.apk, "device_id" and "device_arch" are all set in config.json
+
+   python run.py -v 11.39.251.0
    //11.39.251.0 means the version of RuntimeLib.apk
 
    python run.py -v 11.39.251.0 -a x86 -d MedfieldC3567E1E
-   //You can also type commands below instead if you don't want to set "device_id" and "device_arch" in config.json:
+   //You can also type commands below instead if you don't want to set "device_id" and "device_arch" in config.json.
 
 Test Results:
 ========================================================

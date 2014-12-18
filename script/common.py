@@ -84,6 +84,17 @@ def remove_glob_path(filepath):
         for path in glob.glob(filepath):
             os.remove(path)
 
+def find_text_in_file(str, filepath):
+    count = 0
+    reader = open(filepath, "r+")
+    line = reader.readline()#读取第一行数据
+    while line != '' and line != None:#循环读取数据行
+        li = re.findall(str, line)
+        count = count + len(li)
+        line = reader.readline()
+    reader.close()
+    return count
+
 def copy_tree(sourceDir,  targetDir):
     shutil.copytree(sourceDir,  targetDir)
 
@@ -114,6 +125,11 @@ def parse_config_json(pathname, field):
         for var in d['device']:
             t.append(var[field])
         return t
+    if field.startswith('rtlib_'):
+        t = []
+        for var in d['runtimelib_test_build']:
+            t.append(var[field])
+        return t
     elif field.startswith('davinci_'):
         return d['davinci'][field]
     elif field.startswith('runtimelib_'):
@@ -127,12 +143,5 @@ def parse_config_json(pathname, field):
             value = d[field]
             return value
 
-def replace_test_in_file(text, replacetext, inputfile, outputfile):
-    input_file = open(inputfile)
-    output_file = open(outputfile, 'w')
-    for s in input_file:
-        output_file.write(s.replace(text, replacetext))
-    output.close()
-    input.close()
 
 

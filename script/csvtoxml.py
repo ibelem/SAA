@@ -44,6 +44,10 @@ CONFIGJSONPATH = os.path.join(SCRIPTPATH, 'config.json')
 
 def copy_result(deviceid, exetime):
     test_result_dir = common.parse_config_json(CONFIGJSONPATH, 'test_result_dir')
+
+    if not common.find_dir(test_result_dir):
+        common.mk_dir(test_result_dir)
+
     try:
         common.copy_tree(os.path.join(TESTPATH, deviceid), os.path.join(test_result_dir, deviceid))
     except Exception, ex:
@@ -160,7 +164,6 @@ def generate_xml_report(version, deviceid, arch, pathname):
     set.attrib['name'] = common.parse_config_json(CONFIGJSONPATH, 'test_suite_set_name')
     set.attrib['set_debug_msg'] = 'N/A'
     set.attrib['type'] = 'wrt'
-
     file = et.ElementTree(root)
     file.write(pathname, pretty_print=True, xml_declaration=True, encoding='utf-8')
 
@@ -170,6 +173,6 @@ def csv_xml(version, deviceid, arch):
         for i in common.find_glob_path(TESTPATH + '/TestResult_*'):
             exetime = i.replace(TESTPATH, '').replace('\\', '').replace('TestResult_', '')
             csv_reader(version, deviceid, arch, os.path.join(i, davinci_csv_file), exetime)
-            print '===== The test result xml of '+ os.path.join(i, 'davinci_csv_file') +' has been created. ====='
+            print '===== Create '+ os.path.join(i, 'davinci_csv_file') +' ----- PASS. ====='
     else:
         print 'No csv files found, please rerun the test.'

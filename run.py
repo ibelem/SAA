@@ -27,9 +27,13 @@
 #
 # Authors:
 #        Zhang,Belem <belem.zhang@intel.com>
+#
+# otctools.jf.intel.com
 
-import os,sys
+import os, sys
 from datetime import *
+from time import sleep
+import time
 from optparse import OptionParser
 from script import common, adb, runtimelib, rundavinci, csvtoxml, gl
 import threading
@@ -40,20 +44,16 @@ SCRIPTPATH = os.path.join(SUITEPATH,'script')
 CONFIGJSONPATH = os.path.join(SCRIPTPATH, 'config.json')
 
 runtimelibapk = common.parse_config_json(CONFIGJSONPATH, 'runtimelib_apk')
+runtimelibbuildnumber = common.parse_config_json(CONFIGJSONPATH, 'rtlib_test_build')
 
 def run(version, deviceid, arch):
     rundavinci.clear_davinci_test(deviceid)
     runtimelib.install_runtimelib(version, deviceid, arch)
+    #time.sleep(5)
     rundavinci.run_davinci(version, deviceid, arch)
     csvtoxml.csv_xml(version, deviceid, arch)
 
 def option_check(version, deviceid, arch):
-    if version:
-        print 'Version:', version
-    else:
-        print '##### Version option is not defined. #####\nPlease use -v or --version with the build number of '+ runtimelibapk +'.'
-        sys.exit(0)
-
     if arch and deviceid:
         arch = arch.lower()
         print 'Device:', deviceid
@@ -68,12 +68,21 @@ def option_check(version, deviceid, arch):
             print 'Device:', i['device_id']
             print 'Architecture:', i['device_arch']
             print 'Name:', i['device_name']
-            run(version, i['device_id'], i['device_arch'])
+            if not runtimelibbuildnumber:
+                if version:
+                    print 'Version:', version
+                    run(version, i['device_id'], i['device_arch'])
+                else:
+                    print '##### Version option is not defined. #####\nPlease use -v or --version with the build number of '+ runtimelibapk +'.'
+                    sys.exit(0)
+            else:
+                for j in runtimelibbuildnumber:
+                    run(j, i['device_id'], i['device_arch'])
 
 def main():
     parser = OptionParser()
     parser.add_option('-v', '--version', dest='version',
-                  help = '(required) build number of ' + runtimelibapk + '.')
+                  help = '(optional) build number of ' + runtimelibapk + '. if you don\'t specify it here, please make sure to add it in config.json.')
     #parser.add_option('-c', '--clear', dest='clear',
     #            help = '(optional) clear the test suite environment from the beginning.')
     parser.add_option('-a', '--arch', dest='arch',

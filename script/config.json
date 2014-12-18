@@ -1,27 +1,36 @@
 {
-  "name": "Crosswalk Top App Test from Google Play",
+  "name": "Crosswalk Web App (from Play Store) Monkey Test",
   "version": "1.0",
   "davinci": {
     "davinci_path": "C:/Intel/BiTS/DaVinci/",
     "davinci_rnr_log_dir": "_DaVinci_RnR_Logs",
     "davinci_csv_file": "Smoke_Test_Report.csv",
-    "davinci_device_environment_set": "false"
+    "davinci_device_environment_set": "true",
+    "davinci_test_timeout": "580",
+    "davinci_test_rerun_max": "1",
+    "davinci_test_action_number": "8",
+    "davinci_test_click_percentage": "80",
+    "davinci_test_swipe_percentage": "20"
   },
   "runtimelib": {
     "runtimelib_package": "org.xwalk.core",
     "runtimelib_apk": "XWalkRuntimeLib.apk"
   },
+  "runtimelib_test_build": [
+    {"rtlib_test_build": "11.39.265.0"},
+    {"rtlib_test_build": "11.39.251.0"}
+  ],
   "test_suite": {
-    "test_suite_category": "Sample Apps",
-    "test_suite_module": "Sample Apps",
-    "test_suite_set_name": "Sample Apps",
-    "test_suite_name": "wrt-top-app-android-tests"
+    "test_suite_category": "Web Apps",
+    "test_suite_module": "Web Apps",
+    "test_suite_set_name": "Web Apps",
+    "test_suite_name": "webapp-monkey-android-tests"
   },
   "test_result": {
-    "test_result_dir": "C:/Users/zhangmin/Desktop/AA A",
-    "test_result_xml_name": "wrt-top-app-android-tests-result.xml"
+    "test_result_dir": "C:/Users/zhangmin/Desktop/CCC",
+    "test_result_xml_name": "webapp-monkey-android-tests-result.xml"
   },
   "device": [
-    {"device_id":"MedfieldC3567E1E", "device_name":"ZTE Geek V975", "device_arch": "x86"}
+    {"device_id":"E6OKCY410605", "device_name":"ASUS Memo Pad K001", "device_arch": "x86"}
   ]
 }
