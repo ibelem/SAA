@@ -5,7 +5,7 @@
     "davinci_path": "C:/Intel/BiTS/DaVinci/",
     "davinci_rnr_log_dir": "_DaVinci_RnR_Logs",
     "davinci_csv_file": "Smoke_Test_Report.csv",
-    "davinci_device_environment_set": "true",
+    "davinci_device_environment_set": "false",
     "davinci_test_timeout": "580",
     "davinci_test_rerun_max": "1",
     "davinci_test_action_number": "8",
@@ -17,8 +17,7 @@
     "runtimelib_apk": "XWalkRuntimeLib.apk"
   },
   "runtimelib_test_build": [
-    {"rtlib_test_build": "11.39.265.0"},
-    {"rtlib_test_build": "11.39.251.0"}
+    {"rtlib_test_build": "11.39.265.0"}
   ],
   "test_suite": {
     "test_suite_category": "Web Apps",
@@ -27,7 +26,7 @@
     "test_suite_name": "webapp-monkey-android-tests"
   },
   "test_result": {
-    "test_result_dir": "C:/Users/zhangmin/Desktop/CCC",
+    "test_result_dir": "C:/Users/lenovo/Desktop/CCC",
     "test_result_xml_name": "webapp-monkey-android-tests-result.xml"
   },
   "device": [

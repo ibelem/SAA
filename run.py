@@ -49,7 +49,7 @@ runtimelibbuildnumber = common.parse_config_json(CONFIGJSONPATH, 'rtlib_test_bui
 def run(version, deviceid, arch):
     rundavinci.clear_davinci_test(deviceid)
     runtimelib.install_runtimelib(version, deviceid, arch)
-    #time.sleep(5)
+    time.sleep(5)
     rundavinci.run_davinci(version, deviceid, arch)
     csvtoxml.csv_xml(version, deviceid, arch)
 

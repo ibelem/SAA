@@ -55,6 +55,9 @@ def del_files(path, ext):
             if name.endswith(ext):
                 os.remove(os.path.join(root, name))
 
+def del_file(path):
+    os.remove(path)
+
 def del_dir(path):
     shutil.rmtree(path)
 

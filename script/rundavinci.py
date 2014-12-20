@@ -52,6 +52,10 @@ def clear_davinci_test(deviceid):
         common.del_files(SUITEPATH, 'null')
         common.del_files(SUITEPATH, '.png')
         common.del_files(SUITEPATH, '.info')
+        common.del_file(SUITEPATH + '/null')
+        common.del_files(SUITEPATH, '.txt')
+        common.del_files(SUITEPATH, '.log')
+
         print 'Delete file: ' + '.qs, .xml, .csv, .txt, .log' + i + ' in ' + TESTPATH + ' ----- PASS'
 
         davinci_rnr_log_dir = common.parse_config_json(CONFIGJSONPATH, 'davinci_rnr_log_dir')
@@ -71,6 +75,14 @@ def clear_davinci_test(deviceid):
     except Exception, ex:
         print ex,'\nDelete files or folder ----- FAIL.'
 
+def prepare_davinci_delete_default_device_cfg_txt():
+    delete_default_device_cfg_txt_path = os.path.join(DAVINCIPATH, 'Scripts', 'default_device_cfg.txt')
+    if common.find_file(delete_default_device_cfg_txt_path):
+        common.del_file(delete_default_device_cfg_txt_path)
+        print 'Delete default_device_cfg.txt: ----- PASS'
+    else:
+        print 'default_device_cfg.txt doesn\'t exist ----- Good'
+
 def prepare_davinci_silent_mode():
     if common.find_file(os.path.join(DAVINCIPATH, 'Scripts', 'user_input1.txt')):
         common.copy_file(os.path.join(DAVINCIPATH, 'Scripts', 'user_input1.txt'), os.path.join(SUITEPATH, 'user_input1.txt'))
@@ -85,6 +97,7 @@ def prepare_davinci_run_qs_py():
 
     run_qs_path = os.path.join(DAVINCIPATH, 'Scripts', 'run_qs.py')
     run_qs_bak_path = os.path.join(DAVINCIPATH, 'Scripts', 'run_qs_bak.py')
+    power_pusher_abs_path = os.path.join(DAVINCIPATH, 'Scripts') + '/power_pusher.qs'
 
     if not common.find_file(run_qs_bak_path):
         common.copy_file(run_qs_path, run_qs_bak_path)
@@ -94,14 +107,18 @@ def prepare_davinci_run_qs_py():
     if common.find_file(run_qs_bak_path):
         f_bak = open(run_qs_bak_path, "r+")
         target_file = open(run_qs_path, 'w')
+        #pp_qs = "power_pusher.qs" => pp_qs = "ABSOLUTE_PATH/power_pusher.qs"
+        g = re.sub(r'pp_qs = "power_pusher.qs"', 'pp_qs = "'+ power_pusher_abs_path +'"', f_bak.read())
         # RunDavinci(device_name, qs_name) in run_qs.py
-        g = re.sub(r'timeout = 600', 'timeout = ' + davinci_test_timeout, f_bak.read())
+        g = re.sub(r'timeout = 600', 'timeout = ' + davinci_test_timeout, g)
         #g = re.sub(r'timeout = 1000', 'timeout = ' + davinci_test_timeout, g)
         # RunTest(is_agressive) in run_qs.py
         g = re.sub(r'rerun_max = 3', 'rerun_max = ' + davinci_test_rerun_max, g)
+        # Add changed = True in CreateNewCfg(camera_mode) in run_qs.py
+        g = re.sub(r'reuse = False', 'reuse = False\n        changed = True', g)
         # PrepareBeforeSmokeTest(device_name) in run_qs.py
         if davinci_device_environment_set == 'false':
-            g = g.replace('PrepareBeforeSmokeTest(device_name):', 'PrepareBeforeSmokeTest(device_name):\n    return 1')
+            g = g.replace('PrepareBeforeSmokeTest(all_dev)', '#PrepareBeforeSmokeTest(all_dev)')
         target_file.write(g)
         f_bak.close()
         target_file.close()
@@ -145,6 +162,7 @@ def prepare_davinci_generate_py():
             print 'Set davinci_test_swipe_percentage: ' + davinci_test_swipe_percentage + ' ----- PASS'
 
 def precondition_davinci():
+    prepare_davinci_delete_default_device_cfg_txt()
     prepare_davinci_silent_mode()
     prepare_davinci_run_qs_py()
     prepare_davinci_generate_py()
