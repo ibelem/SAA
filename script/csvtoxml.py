@@ -40,30 +40,31 @@ from lxml import etree as et
 SUITEPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),os.path.pardir)
 TESTPATH = os.path.join(SUITEPATH,'tests')
 SCRIPTPATH = os.path.join(SUITEPATH,'script')
-CONFIGJSONPATH = os.path.join(SCRIPTPATH, 'config.json')
+JSONPATH = os.path.join(SCRIPTPATH, 'config.json')
+
+davincicsvfile = common.parse_c_json(JSONPATH, 'davinci_csv_file')
+testresultdir = common.parse_c_json(JSONPATH, 'test_result_dir')
+rnr = common.parse_c_json(JSONPATH, 'davinci_rnr_log_dir')
+rnrtmpdir = os.path.join(TESTPATH, rnr)
 
 def copy_result(deviceid, exetime):
-    test_result_dir = common.parse_config_json(CONFIGJSONPATH, 'test_result_dir')
-
-    if not common.find_dir(test_result_dir):
-        common.mk_dir(test_result_dir)
-
+    if not common.find_dir(testresultdir):
+        common.mk_dir(testresultdir)
     try:
-        common.copy_tree(os.path.join(TESTPATH, deviceid), os.path.join(test_result_dir, deviceid))
+        common.copy_tree(os.path.join(TESTPATH, deviceid), os.path.join(testresultdir, deviceid))
     except Exception, ex:
-        common.copy_files(os.path.join(TESTPATH, deviceid), os.path.join(test_result_dir, deviceid))
+        common.copy_files(os.path.join(TESTPATH, deviceid), os.path.join(testresultdir, deviceid))
 
     tr = 'TestResult_' + exetime
     try:
-        common.copy_tree(os.path.join(TESTPATH, tr), os.path.join(test_result_dir, tr))
+        common.copy_tree(os.path.join(TESTPATH, tr), os.path.join(testresultdir, tr))
     except Exception, ex:
-        common.copy_files(os.path.join(TESTPATH, tr), os.path.join(test_result_dir, tr))
+        common.copy_files(os.path.join(TESTPATH, tr), os.path.join(testresultdir, tr))
 
-    rnr = common.parse_config_json(CONFIGJSONPATH, 'davinci_rnr_log_dir')
     try:
-        common.copy_tree(os.path.join(TESTPATH, rnr), os.path.join(test_result_dir, rnr))
+        common.copy_tree(rnrtmpdir, os.path.join(testresultdir, rnr))
     except Exception, ex:
-        common.copy_files(os.path.join(TESTPATH, rnr), os.path.join(test_result_dir, rnr))
+        common.copy_files(rnrtmpdir, os.path.join(testresultdir, rnr))
 
 def csv_reader(version, deviceid, arch, filepath, exetime):
     if common.find_file(filepath):
@@ -71,27 +72,38 @@ def csv_reader(version, deviceid, arch, filepath, exetime):
         common.mk_dir(p)
         p = os.path.join(TESTPATH, deviceid, exetime)
         common.mk_dir(p)
-        q = os.path.join(p, common.parse_config_json(CONFIGJSONPATH, 'test_result_xml_name'))
+
+        q = os.path.join(p, common.parse_c_json(JSONPATH, 'test_result_xml_name'))
         generate_xml_report(version, deviceid, arch, q)
 
         dreader = csv.DictReader(open(filepath))
         #print len(list(dreader))
 
         for c in dreader:
-            reportlink = str(c['ReportLink']).replace('=HYPERLINK("','').replace('")','').replace('\\\\','\\')
+            reportlink = str(c['Link']).replace('=HYPERLINK("','').replace('")','').replace('\\\\','\\')
             #testtime = c['TestTime']
             testtime = ''
-            print c['Install'], c['Launch'], c['Random'], c['Back'], c['Uninstall'], c['Result'], c['FailReason']
-            for i in ['Install', 'Launch', 'Random', 'Back', 'Uninstall']:
+            print c['Install'], c['Launch'], c['Random'], c['Back'], c['Uninstall'], c['Logcat'], c['Result'], c['Reason'].strip()
+            for i in ['Install', 'Launch', 'Random', 'Back', 'Uninstall', 'Logcat']:
                 result = c[i]
                 if result.lower() == 'skip':
                     result = 'BLOCK'
-                insert_xml_case_result(version, deviceid, arch, q, testtime, c['Application'].lower().replace('.apk',''), i.upper(), result, c['FailReason'].strip(), reportlink.strip())
+                application = ''
+                try:
+                    application = c['Application'].decode('utf-8').replace('.apk','')
+                except Exception, ex:
+                    application = c['\xef\xbb\xbfApplication'].decode('utf-8').replace('.apk','')
+                package = ''
+                try:
+                    package = c['Package']
+                except Exception, ex:
+                    print ex
+                insert_xml_case_result(version, deviceid, arch, q, testtime, application, package, i.lower(), result, c['Reason'].strip(), reportlink.strip())
         copy_result(deviceid, exetime)
     else:
         print 'Can\'t find file: ' + filepath
 
-def insert_xml_case_result(version, deviceid, arch, q, testtime, application, step, result, failreason, reportlink):
+def insert_xml_case_result(version, deviceid, arch, q, testtime, application, package, step, result, failreason, reportlink):
     parser = et.XMLParser(remove_blank_text=True)
     tree = et.parse(q, parser)
     #root = tree.getroot()
@@ -104,9 +116,9 @@ def insert_xml_case_result(version, deviceid, arch, q, testtime, application, st
         t = reportlink
 
     testcase = et.SubElement(set, 'testcase')
-    testcase.attrib['component'] = common.parse_config_json(CONFIGJSONPATH, 'test_suite_category') + '/' + common.parse_config_json(CONFIGJSONPATH, 'test_suite_module')
+    testcase.attrib['component'] = common.parse_c_json(JSONPATH, 'test_suite_category') + '/' + common.parse_c_json(JSONPATH, 'test_suite_module') + '/' + package
     testcase.attrib['execution_type'] = 'auto'
-    testcase.attrib['id'] = 'wrt_sample_app_'+ application.lower() + '_' + step
+    testcase.attrib['id'] = 'webapp_monkey_'+ application.lower() + '_' + step
     testcase.attrib['purpose'] = 'Verify ' + step + ' step of ' + application.lower() + ' works correctly'
     testcase.attrib['result'] = result
     #testcase.attrib['comment'] = t
@@ -141,7 +153,7 @@ def generate_xml_report(version, deviceid, arch, pathname):
     environment.attrib['build_id'] = version
     environment.attrib['device_id'] = deviceid
     environment.attrib['device_model'] = ''
-    environment.attrib['device_name'] = common.parse_config_json(CONFIGJSONPATH, 'device_name')[0]
+    environment.attrib['device_name'] = common.parse_c_json(JSONPATH, 'device_name')[0]
     environment.attrib['host'] = socket.gethostname()
     environment.attrib['lite_version'] = ''
     environment.attrib['manufacturer'] = ''
@@ -150,29 +162,84 @@ def generate_xml_report(version, deviceid, arch, pathname):
     environmentother = et.SubElement(environment, 'other')
 
     summary = et.SubElement(root, 'summary')
-    summary.attrib['test_plan_name'] = common.parse_config_json(CONFIGJSONPATH, 'name')
+    summary.attrib['test_plan_name'] = common.parse_c_json(JSONPATH, 'name')
     start_at = et.SubElement(summary, 'start_at')
     start_at.text = gl.__starttime__
     end_at = et.SubElement(summary, 'end_at')
     end_at.text = endtime
 
     suite = et.SubElement(root, 'suite')
-    suite.attrib['category'] = common.parse_config_json(CONFIGJSONPATH, 'test_suite_category')
-    suite.attrib['name'] = common.parse_config_json(CONFIGJSONPATH, 'test_suite_name')
+    suite.attrib['category'] = common.parse_c_json(JSONPATH, 'test_suite_category')
+    suite.attrib['name'] = common.parse_c_json(JSONPATH, 'test_suite_name')
 
     set = et.SubElement(suite, 'set')
-    set.attrib['name'] = common.parse_config_json(CONFIGJSONPATH, 'test_suite_set_name')
+    set.attrib['name'] = common.parse_c_json(JSONPATH, 'test_suite_set_name')
     set.attrib['set_debug_msg'] = 'N/A'
     set.attrib['type'] = 'wrt'
     file = et.ElementTree(root)
     file.write(pathname, pretty_print=True, xml_declaration=True, encoding='utf-8')
 
+def csv_insert_logcat_result(filepath, filepathnew):
+    def add_logcat_record(record, result):
+            record['Logcat'] = result
+    with open(filepath, "rb") as fin:
+        with open(filepathnew, "wb") as fout:
+            fields = ['Application',
+                      'App name',
+                      'Device Model', 'Android Version', 'Device Build Number', 'Package',
+                      'App Version',
+                      'Install', 'Launch', 'Random', 'Back', 'Uninstall',
+                      'Result', 'Reason', 'Link']
+            fields_new = ['Application',
+                      'App name',
+                      'Device Model', 'Android Version', 'Device Build Number', 'Package',
+                      'App Version',
+                      'Install', 'Launch', 'Random', 'Back', 'Uninstall', 'Logcat',
+                      'Result', 'Reason', 'Link']
+            reader = csv.DictReader(fin, fieldnames=fields)
+            writer = csv.DictWriter(fout, fieldnames=fields_new)
+            writer.writeheader()
+            #fout.write(",".join(fields) + '\n')
+            reader.next()
+            for record in reader:
+                add_logcat_record(record, check_logcat_result(filepath, record['Package'].replace('.apk','')))
+                writer.writerow(record)
+
+def check_logcat_result(csvpath, apkpackage):
+    keyword_fail = common.parse_c_json(JSONPATH, 'keyword_fail')
+    logcatresult = 'BLOCK'
+    num = 0
+    logcatpkgpath = rnrtmpdir + '/*/' + 'apk_logcat_'+ apkpackage +'.txt'
+    if common.find_glob_path(logcatpkgpath):
+        for j in common.find_glob_path(logcatpkgpath):
+            for k in keyword_fail:
+                if common.find_text_in_file_case_insensitive(k.lower(), j):
+                    num = num + 1
+        if num > 0:
+            logcatresult = 'FAIL'
+        else:
+            logcatresult = 'PASS'
+        num = 0
+    else:
+        logcatresult = 'BLOCK'
+    return logcatresult
+
+
 def csv_xml(version, deviceid, arch):
-    davinci_csv_file = common.parse_config_json(CONFIGJSONPATH, 'davinci_csv_file')
+    print '\nStart to handle CSV and XML results:'
+    print '------------------------------------------------------------------------------------------------------------------------------------'
     if common.find_glob_path(TESTPATH + '/TestResult_*'):
         for i in common.find_glob_path(TESTPATH + '/TestResult_*'):
-            exetime = i.replace(TESTPATH, '').replace('\\', '').replace('TestResult_', '')
-            csv_reader(version, deviceid, arch, os.path.join(i, davinci_csv_file), exetime)
-            print '===== Create '+ os.path.join(i, 'davinci_csv_file') +' ----- PASS. ====='
+            try:
+                exetime = i.replace(TESTPATH, '').replace('\\', '').replace('TestResult_', '')
+                filepath = os.path.join(i, davincicsvfile)
+                filepathnew = filepath.replace('.csv','') + '_Add_Logcat.csv'
+                csv_insert_logcat_result(filepath, filepathnew)
+                csv_reader(version, deviceid, arch, filepathnew, exetime)
+            except Exception, ex:
+                print ex
+        print '\nCompleted the web app monkey tests:'
+        print '------------------------------------------------------------------------------------------------------------------------------------'
+        print 'Please get full test results in ' + testresultdir
     else:
         print 'No csv files found, please rerun the test.'

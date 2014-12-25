@@ -4,13 +4,14 @@
   "davinci": {
     "davinci_path": "C:/Intel/BiTS/DaVinci/",
     "davinci_rnr_log_dir": "_DaVinci_RnR_Logs",
-    "davinci_csv_file": "Smoke_Test_Report.csv",
-    "davinci_device_environment_set": "false",
-    "davinci_test_timeout": "580",
-    "davinci_test_rerun_max": "1",
-    "davinci_test_action_number": "8",
-    "davinci_test_click_percentage": "80",
-    "davinci_test_swipe_percentage": "20"
+    "davinci_csv_file": "Smoke_Test_Summay.csv",
+    "davinci_device_environment_set": "true",
+    "davinci_timeout": "580",
+    "davinci_rerun_max": "1",
+    "davinci_action_number": "8",
+    "davinci_click_percentage": "80",
+    "davinci_swipe_percentage": "20",
+    "davinci_battery_threshold": "10"
   },
   "runtimelib": {
     "runtimelib_package": "org.xwalk.core",
@@ -29,6 +30,14 @@
     "test_result_dir": "C:/Users/lenovo/Desktop/CCC",
     "test_result_xml_name": "webapp-monkey-android-tests-result.xml"
   },
+  "logcat_check": [
+    {"keyword_fail": "WIN DEATH"},
+    {"keyword_fail": "has died"},
+    {"keyword_fail": "Fatal"},
+    {"keyword_fail": "ANR"},
+    {"keyword_fail": "not responding"},
+    {"keyword_fail": "uncaused exception"}
+  ],
   "device": [
     {"device_id":"E6OKCY410605", "device_name":"ASUS Memo Pad K001", "device_arch": "x86"}
   ]

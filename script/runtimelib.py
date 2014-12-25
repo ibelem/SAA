@@ -34,39 +34,42 @@ from script import adb, common
 SUITEPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),os.path.pardir)
 TESTPATH = os.path.join(SUITEPATH,'tests')
 SCRIPTPATH = os.path.join(SUITEPATH,'script')
-CONFIGJSONPATH = os.path.join(SCRIPTPATH, 'config.json')
+JSONPATH = os.path.join(SCRIPTPATH, 'config.json')
 
-runtimelibpkg = common.parse_config_json(CONFIGJSONPATH, 'runtimelib_package')
-runtimelibapk = common.parse_config_json(CONFIGJSONPATH, 'runtimelib_apk')
+rtlibpkg = common.parse_c_json(JSONPATH, 'runtimelib_package')
+rtlibapk = common.parse_c_json(JSONPATH, 'runtimelib_apk')
 
 def download_runtimelib():
     print '*** TO DO ***'
 
 def check_runtimelib(deviceid):
-    if runtimelibpkg in adb.list_pkg(deviceid):
-        print runtimelibapk +' was installed.'
+    if rtlibpkg in adb.list_pkg(deviceid):
+        print rtlibapk +' was installed.'
         return True
     else:
-        print runtimelibapk +' is not installed.'
+        print rtlibapk +' is not installed.'
         return False
 
 def uninstall_runtimelib(deviceid):
     if check_runtimelib(deviceid):
         try:
-            adb.uninstall_pkg(deviceid, runtimelibpkg)
-            print 'Uninstall '+ runtimelibapk +' ----- PASS.'
+            adb.uninstall_pkg(deviceid, rtlibpkg)
+            print 'Uninstall '+ rtlibapk +' ----- PASS.'
         except Exception, ex:
-            print 'Uninstall '+ runtimelibapk +'----- FAIL.',ex
+            print 'Uninstall '+ rtlibapk +'----- FAIL.',ex
             sys.exit(0)
 
 def install_runtimelib(version, deviceid, arch):
     try:
-        uninstall_runtimelib(deviceid);
-        pkgpath = os.path.join(SUITEPATH, 'runtimelib', version, arch, runtimelibapk)
-        print 'Install '+ runtimelibapk +' from', pkgpath
+        print '\nStart to handle ' + rtlibapk + ' process:'
+        print '------------------------------------------------------------------------------------------------------------------------------------'
+        adb.restart_adb()
+        uninstall_runtimelib(deviceid)
+        pkgpath = os.path.join(SUITEPATH, 'runtimelib', version, arch, rtlibapk)
+        print 'Install '+ rtlibapk +' from', pkgpath
         adb.install_pkg(deviceid, pkgpath)
-        print 'Install '+ runtimelibapk +' ----- PASS.'
+        print 'Install '+ rtlibapk +' ----- PASS.'
     except Exception, ex:
-        print 'Install '+ runtimelibapk +'----- FAIL.\n', ex
+        print 'Install '+ rtlibapk +'----- FAIL.\n', ex
         sys.exit(0)
 

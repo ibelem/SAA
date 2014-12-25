@@ -33,6 +33,8 @@ import os, sys
 import re, codecs
 import shutil, glob
 import json
+import subprocess
+import threading
 
 
 def multi_replace(string, dic):
@@ -90,8 +92,20 @@ def remove_glob_path(filepath):
 def find_text_in_file(str, filepath):
     count = 0
     reader = open(filepath, "r+")
-    line = reader.readline()#读取第一行数据
-    while line != '' and line != None:#循环读取数据行
+    line = reader.readline()
+    while line != '' and line != None:
+        li = re.findall(str, line)
+        count = count + len(li)
+        line = reader.readline()
+    reader.close()
+    return count
+
+def find_text_in_file_case_insensitive(str, filepath):
+    count = 0
+    reader = open(filepath, "r+")
+    line = reader.readline()
+    while line != '' and line != None:
+        line = line.lower()
         li = re.findall(str, line)
         count = count + len(li)
         line = reader.readline()
@@ -119,7 +133,26 @@ def copy_files(sourceDir,  targetDir):
              First_Directory = False
              copy_files(sourceFile, targetFile)
 
-def parse_config_json(pathname, field):
+def readFile(filename):
+    try:
+        file=open(filename,"r")
+    except IOError:
+        print >> sys.stderr, "file " + filename + " could not be opened"
+        sys.exit(1)
+    return file
+
+def writeFile(filename, content):
+    file = open(filename, "w")
+    file.write(content)
+    file.close()
+
+def run_command(str):
+    # use Popen instead of os.system to avoid "command line too long" on Windows
+    p = subprocess.Popen("cmd /c " + str)
+    p.wait()
+    return p.returncode
+
+def parse_c_json(pathname, field):
     fp = open(pathname)
     reader = fp.read()
     d = json.loads(reader, strict=False)
@@ -131,6 +164,11 @@ def parse_config_json(pathname, field):
     if field.startswith('rtlib_'):
         t = []
         for var in d['runtimelib_test_build']:
+            t.append(var[field])
+        return t
+    if field.startswith('keyword_fail'):
+        t = []
+        for var in d['logcat_check']:
             t.append(var[field])
         return t
     elif field.startswith('davinci_'):

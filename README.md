@@ -13,7 +13,7 @@ Pre-requirements
 
 Installation
 ========================================================
-1. Download DaVinci package 2.2.5 or higher from \\ccr\ec\proj\ssg\dpd\BiTS\DaVinci_Customers\Releases\2.2.5\DaVinci_Install.zip
+1. Download DaVinci package 2.2.6 or higher from \\ccr\ec\proj\ssg\dpd\BiTS\DaVinci_Customers\Releases\2.2.6\DaVinci_Install.zip
 2. Unzip DaVinci_Install.zip, run Single_Click_Installation.bat
 3. Download Crosswalk Top App Test Suite from https://github.com/crosswalk-project/crosswalk-test-suite/tree/master/misc/topapp-android-tests
 
@@ -47,11 +47,12 @@ Update key fields of config.json in /webapp-monkey-android-tests/script/ folder:
   "davinci": {
     "davinci_path": "C:/Intel/BiTS/DaVinci/",
     "davinci_device_environment_set": "true",
-    "davinci_test_timeout": "300",
-    "davinci_test_rerun_max": "1",
-    "davinci_test_action_number": "10",
-    "davinci_test_click_percentage": "82",
-    "davinci_test_swipe_percentage": "18"
+    "davinci_timeout": "300",
+    "davinci_rerun_max": "1",
+    "davinci_action_number": "10",
+    "davinci_click_percentage": "82",
+    "davinci_swipe_percentage": "18",
+    "davinci_battery_threshold": "10"
   },
   "runtimelib": {
     "runtimelib_package": "org.xwalk.core",
@@ -65,16 +66,26 @@ Update key fields of config.json in /webapp-monkey-android-tests/script/ folder:
     "test_result_dir": "C:/Users/zhangmin/Desktop/CCC",
     "test_result_xml_name": "webapp-monkey-android-tests-result.xml"
   },
+  "logcat_check": [
+    {"keyword_fail": "WIN DEATH"},
+    {"keyword_fail": "has died"},
+    {"keyword_fail": "Fatal"},
+    {"keyword_fail": "ANR"},
+    {"keyword_fail": "not responding"},
+    {"keyword_fail": "uncaused exception"}
+  ],
   "device": [
     {"device_id":"E6OKCY410605", "device_name":"ASUS Memo Pad K001", "device_arch": "x86"}
   ]
 }
 
 * List 2 or more runtimelib_test_build will run the monkey tests on 2 or more RuntimeLib builds orderly.
-* Default davinci_test_timeout value is 600.
-* Default davinci_test_rerun_max value is 3.
-* Default davinci_test_action_number value is 10. Modify the value will cause the whole testing time changes.
-* Make sure: davinci_test_click_percentage value + davinci_test_swipe_percentage value == 100
+* Default davinci_timeout value is 600.
+* Default davinci_rerun_max value is 3.
+* Default davinci_action_number value is 10. Modify the value will cause the whole testing time changes.
+* Make sure: davinci_click_percentage value + davinci_swipe_percentage value == 100
+* Battery threshold value means the minimal battery 10% can be accepted to run the tests, or the tests will be suspended until charged more than 10%.
+* The keywords of Logcat results check including Crash, Fatal Error, Android Not Response etc., you can add more conditions. The keywords are case insensitive.
 
 How to Run
 ========================================================

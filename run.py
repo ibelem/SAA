@@ -41,17 +41,17 @@ import threading
 SUITEPATH = os.path.dirname(os.path.abspath(__file__))
 TESTPATH = os.path.join(SUITEPATH,'tests')
 SCRIPTPATH = os.path.join(SUITEPATH,'script')
-CONFIGJSONPATH = os.path.join(SCRIPTPATH, 'config.json')
+JSONPATH = os.path.join(SCRIPTPATH, 'config.json')
 
-runtimelibapk = common.parse_config_json(CONFIGJSONPATH, 'runtimelib_apk')
-runtimelibbuildnumber = common.parse_config_json(CONFIGJSONPATH, 'rtlib_test_build')
+rtlibapk = common.parse_c_json(JSONPATH, 'runtimelib_apk')
+rtlibbuild = common.parse_c_json(JSONPATH, 'rtlib_test_build')
 
 def run(version, deviceid, arch):
     rundavinci.clear_davinci_test(deviceid)
-    runtimelib.install_runtimelib(version, deviceid, arch)
-    time.sleep(5)
-    rundavinci.run_davinci(version, deviceid, arch)
-    csvtoxml.csv_xml(version, deviceid, arch)
+    #runtimelib.install_runtimelib(version, deviceid, arch)
+    #time.sleep(5)
+    #rundavinci.run_davinci(version, deviceid, arch)
+    #csvtoxml.csv_xml(version, deviceid, arch)
 
 def option_check(version, deviceid, arch):
     if arch and deviceid:
@@ -64,33 +64,35 @@ def option_check(version, deviceid, arch):
     elif deviceid and not arch:
         print '##### Architecture option is not defined. #####\nUse \'python run.py -h\' get more information.'
     else:
-        for i in common.parse_config_json(CONFIGJSONPATH, 'device'):
+        for i in common.parse_c_json(JSONPATH, 'device'):
             print 'Device:', i['device_id']
             print 'Architecture:', i['device_arch']
             print 'Name:', i['device_name']
-            if not runtimelibbuildnumber:
+            if not rtlibbuild:
                 if version:
                     print 'Version:', version
                     run(version, i['device_id'], i['device_arch'])
                 else:
-                    print '##### Version option is not defined. #####\nPlease use -v or --version with the build number of '+ runtimelibapk +'.'
+                    print '##### Version option is not defined. #####\nPlease use -v or --version with the build number of '+ rtlibapk +'.'
                     sys.exit(0)
             else:
-                for j in runtimelibbuildnumber:
+                for j in rtlibbuild:
                     run(j, i['device_id'], i['device_arch'])
 
 def main():
     parser = OptionParser()
     parser.add_option('-v', '--version', dest='version',
-                  help = '(optional) build number of ' + runtimelibapk + '. if you don\'t specify it here, please make sure to add it in config.json.')
+                  help = '(optional) build number of ' + rtlibapk + '. if you don\'t specify it here, please make sure to add it in config.json.')
     #parser.add_option('-c', '--clear', dest='clear',
     #            help = '(optional) clear the test suite environment from the beginning.')
     parser.add_option('-a', '--arch', dest='arch',
-                  help = '(optional) architecture (x86 or arm) of '+ runtimelibapk +'. -d is required if you use it.')
+                  help = '(optional) architecture (x86 or arm) of '+ rtlibapk +'. -d is required if you use it.')
     parser.add_option('-d', '--device', dest='device',
               help = '(optional) device ID of the test device. -a is required if you use it.')
     (options, args) = parser.parse_args()
 
+    print 'Device and test build information:'
+    print '------------------------------------------------------------------------------------------------------------------------------------'
     print args
 
     d = datetime.now()

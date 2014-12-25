@@ -30,6 +30,13 @@
 
 import os,sys
 import subprocess
+import common
+
+SUITEPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),os.path.pardir)
+TESTPATH = os.path.join(SUITEPATH,'tests')
+SCRIPTPATH = os.path.join(SUITEPATH,'script')
+JSONPATH = os.path.join(SCRIPTPATH, 'config.json')
+DAVINCIPATH = common.parse_c_json(JSONPATH, 'davinci_path')
 
 NAME = 'adb'
 DEVICE_S = '-s'
@@ -53,6 +60,19 @@ def uninstall_pkg(device, package):
 def list_pkg(device):
     listpackagescmd = [NAME] + ([DEVICE_S, device] if device else []) + SHELL_CMD
     return subprocess.check_output(listpackagescmd)
+
+def restart_adb():
+    print '\nRestart adb service ...'
+    res = os.popen('adb kill-server').readlines()
+    res = os.popen('adb start-server').readlines()
+    resinfo = ''.join(res)
+    print resinfo
+    if resinfo.find('daemon started successfully') < 0:
+        print 'Restart adb service ----- FAIL'
+        restart_adb()
+    else:
+        res = os.popen('adb devices').readlines()
+        return 0
 
 
 
