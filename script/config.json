@@ -21,8 +21,8 @@
     {"rtlib_test_build": "11.39.265.0"}
   ],
   "test_suite": {
-    "test_suite_category": "Web Apps",
-    "test_suite_module": "Web Apps",
+    "test_suite_category": "Compatipity",
+    "test_suite_module": "Web App",
     "test_suite_set_name": "Web Apps",
     "test_suite_name": "webapp-monkey-android-tests"
   },
