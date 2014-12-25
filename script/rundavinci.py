@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# -*- coding: utf-8 -*-
-
 # Copyright (c) 2014 Intel Corporation.
 #
 # Redistribution and use in source and binary forms, with or without modification,
