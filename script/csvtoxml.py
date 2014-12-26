@@ -40,14 +40,24 @@ from lxml import etree as et
 SUITEPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),os.path.pardir)
 TESTPATH = os.path.join(SUITEPATH,'tests')
 SCRIPTPATH = os.path.join(SUITEPATH,'script')
+RESULTPATH = os.path.join(SUITEPATH,'result')
 JSONPATH = os.path.join(SCRIPTPATH, 'config.json')
 
 davincicsvfile = common.parse_c_json(JSONPATH, 'davinci_csv_file')
 testresultdir = common.parse_c_json(JSONPATH, 'test_result_dir')
 rnr = common.parse_c_json(JSONPATH, 'davinci_rnr_log_dir')
+
 rnrtmpdir = os.path.join(TESTPATH, rnr)
 
+def l(str):
+    common.log_info(str, gl.__logfile__)
+
+def lr(str):
+    common.log_err(str, gl.__logfile__)
+
 def copy_result(deviceid, exetime):
+
+    # Copy <deviceid> of DaVinci (Crosswalk xml result) from <test_suite>/tests to <test_result_dir> defined in config.json
     if not common.find_dir(testresultdir):
         common.mk_dir(testresultdir)
     try:
@@ -55,16 +65,24 @@ def copy_result(deviceid, exetime):
     except Exception, ex:
         common.copy_files(os.path.join(TESTPATH, deviceid), os.path.join(testresultdir, deviceid))
 
+    # Copy TestResult_<datetime> of DaVinci from <test_suite>/tests to <test_result_dir> defined in config.json
     tr = 'TestResult_' + exetime
     try:
         common.copy_tree(os.path.join(TESTPATH, tr), os.path.join(testresultdir, tr))
     except Exception, ex:
         common.copy_files(os.path.join(TESTPATH, tr), os.path.join(testresultdir, tr))
 
+    # Copy _DaVinci_RnR_Logs of DaVinci from <test_suite>/tests to <test_result_dir> defined in config.json
     try:
-        common.copy_tree(rnrtmpdir, os.path.join(testresultdir, rnr))
+        common.copy_tree(os.path.join(TESTPATH, rnr), os.path.join(testresultdir, rnr))
     except Exception, ex:
-        common.copy_files(rnrtmpdir, os.path.join(testresultdir, rnr))
+        common.copy_files(os.path.join(TESTPATH, rnr), os.path.join(testresultdir, rnr))
+
+    # Copy result_<date>_<time>.log of DaVinci from <test_suite>/result to <test_result_dir> defined in config.json
+    try:
+        common.copy_tree(RESULTPATH, testresultdir)
+    except Exception, ex:
+        common.copy_files(RESULTPATH, testresultdir)
 
 def csv_reader(version, deviceid, arch, filepath, exetime):
     if common.find_file(filepath):
@@ -83,7 +101,8 @@ def csv_reader(version, deviceid, arch, filepath, exetime):
             reportlink = str(c['Link']).replace('=HYPERLINK("','').replace('")','').replace('\\\\','\\')
             #testtime = c['TestTime']
             testtime = ''
-            print c['Install'], c['Launch'], c['Random'], c['Back'], c['Uninstall'], c['Logcat'], c['Result'], c['Reason'].strip()
+            l(c['Install'] + ' ' + c['Launch'] + ' ' + c['Random'] + ' ' + c['Back']
+              + ' ' + c['Uninstall'] + ' ' + c['Logcat'] + ' ' + c['Result'] + ' ' + c['Reason'].strip())
             for i in ['Install', 'Launch', 'Random', 'Back', 'Uninstall', 'Logcat']:
                 result = c[i]
                 if result.lower() == 'skip':
@@ -97,11 +116,11 @@ def csv_reader(version, deviceid, arch, filepath, exetime):
                 try:
                     package = c['Package']
                 except Exception, ex:
-                    print ex
+                    lr(str(ex))
                 insert_xml_case_result(version, deviceid, arch, q, testtime, application, package, i.lower(), result, c['Reason'].strip(), reportlink.strip())
         copy_result(deviceid, exetime)
     else:
-        print 'Can\'t find file: ' + filepath
+        l('Can\'t find file: ' + filepath)
 
 def insert_xml_case_result(version, deviceid, arch, q, testtime, application, package, step, result, failreason, reportlink):
     parser = et.XMLParser(remove_blank_text=True)
@@ -226,8 +245,8 @@ def check_logcat_result(csvpath, apkpackage):
 
 
 def csv_xml(version, deviceid, arch):
-    print '\nStart to handle CSV and XML results:'
-    print '------------------------------------------------------------------------------------------------------------------------------------'
+    l('Start to handle CSV and XML results:')
+    l('------------------------------------------------------------------------------------------------------------------------------------')
     if common.find_glob_path(TESTPATH + '/TestResult_*'):
         for i in common.find_glob_path(TESTPATH + '/TestResult_*'):
             try:
@@ -237,9 +256,9 @@ def csv_xml(version, deviceid, arch):
                 csv_insert_logcat_result(filepath, filepathnew)
                 csv_reader(version, deviceid, arch, filepathnew, exetime)
             except Exception, ex:
-                print ex
-        print '\nCompleted the web app monkey tests:'
-        print '------------------------------------------------------------------------------------------------------------------------------------'
-        print 'Please get full test results in ' + testresultdir
+                lr(str(ex))
+        l('Completed the web app monkey tests:')
+        l('------------------------------------------------------------------------------------------------------------------------------------')
+        l('Please get full test results in ' + testresultdir)
     else:
-        print 'No csv files found, please rerun the test.'
+        lr('No csv files found, please rerun the test.')

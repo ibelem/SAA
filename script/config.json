@@ -6,9 +6,9 @@
     "davinci_rnr_log_dir": "_DaVinci_RnR_Logs",
     "davinci_csv_file": "Smoke_Test_Summay.csv",
     "davinci_device_environment_set": "true",
-    "davinci_timeout": "580",
+    "davinci_timeout": "599",
     "davinci_rerun_max": "1",
-    "davinci_action_number": "8",
+    "davinci_action_number": "11",
     "davinci_click_percentage": "80",
     "davinci_swipe_percentage": "20",
     "davinci_battery_threshold": "10"
@@ -21,7 +21,7 @@
     {"rtlib_test_build": "11.39.265.0"}
   ],
   "test_suite": {
-    "test_suite_category": "Compatipity",
+    "test_suite_category": "Compatibility",
     "test_suite_module": "Web App",
     "test_suite_set_name": "Web Apps",
     "test_suite_name": "webapp-monkey-android-tests"

@@ -45,10 +45,17 @@ JSONPATH = os.path.join(SCRIPTPATH, 'config.json')
 
 rtlibapk = common.parse_c_json(JSONPATH, 'runtimelib_apk')
 rtlibbuild = common.parse_c_json(JSONPATH, 'rtlib_test_build')
+testresultdir = common.parse_c_json(JSONPATH, 'test_result_dir')
+
+def l(str):
+    common.log_info(str, gl.__logfile__)
+
+def lr(str):
+    common.log_err(str, gl.__logfile__)
 
 def run(version, deviceid, arch):
     rundavinci.clear_davinci_test(deviceid)
-    #runtimelib.install_runtimelib(version, deviceid, arch)
+    runtimelib.install_runtimelib(version, deviceid, arch)
     #time.sleep(5)
     #rundavinci.run_davinci(version, deviceid, arch)
     #csvtoxml.csv_xml(version, deviceid, arch)
@@ -56,24 +63,27 @@ def run(version, deviceid, arch):
 def option_check(version, deviceid, arch):
     if arch and deviceid:
         arch = arch.lower()
-        print 'Device:', deviceid
-        print 'Architecture:', arch
+        l('Device: ' + deviceid)
+        l('Architecture: ' +  arch)
         run(version, deviceid, arch)
     elif arch and not deviceid:
-        print '##### Device id option is not defined. #####\nUse \'python run.py -h\' get more information.'
+        lr('Device id option is not defined.')
+        lr('Use \'python run.py -h\' get more information.')
     elif deviceid and not arch:
-        print '##### Architecture option is not defined. #####\nUse \'python run.py -h\' get more information.'
+        lr('Architecture option is not defined.')
+        lr('Use \'python run.py -h\' get more information.')
     else:
         for i in common.parse_c_json(JSONPATH, 'device'):
-            print 'Device:', i['device_id']
-            print 'Architecture:', i['device_arch']
-            print 'Name:', i['device_name']
+            l('Device: ' + i['device_id'])
+            l('Architecture: ' + i['device_arch'])
+            l('Name: ' + i['device_name'])
             if not rtlibbuild:
                 if version:
-                    print 'Version:', version
+                    l('Version: ' + version)
                     run(version, i['device_id'], i['device_arch'])
                 else:
-                    print '##### Version option is not defined. #####\nPlease use -v or --version with the build number of '+ rtlibapk +'.'
+                    lr('Version option is not defined.')
+                    lr('Use -v or --version with the build number of '+ rtlibapk +'.')
                     sys.exit(0)
             else:
                 for j in rtlibbuild:
@@ -91,12 +101,13 @@ def main():
               help = '(optional) device ID of the test device. -a is required if you use it.')
     (options, args) = parser.parse_args()
 
-    print 'Device and test build information:'
-    print '------------------------------------------------------------------------------------------------------------------------------------'
-    print args
-
     d = datetime.now()
     gl.__starttime__ = d.strftime('%Y-%m-%d %H:%M:%S')
+    t = gl.__starttime__.replace(' ', '_').replace(':', '-')
+    gl.__logfile__ = os.path.join(testresultdir, 'crosswalk_' + t + '.log')
+
+    l('Device and test build information:')
+    l('------------------------------------------------------------------------------------------------------------------------------------')
 
     option_check(options.version, options.device, options.arch)
 

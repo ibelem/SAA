@@ -30,7 +30,7 @@
 
 import os,sys
 import subprocess
-import common
+import common, gl
 
 SUITEPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),os.path.pardir)
 TESTPATH = os.path.join(SUITEPATH,'tests')
@@ -47,7 +47,7 @@ UNINSTALL_CMD = ['uninstall']
 
 def get_devices():
     getdevicescmd = [NAME] + DEVICES_CMD
-    print subprocess.check_output(getdevicescmd)
+    l(subprocess.check_output(getdevicescmd))
     
 def install_pkg(device, pkgpath):
     installpkgcmd = [NAME] + ([DEVICE_S, device] if device else []) + INSTALL_CMD
@@ -62,17 +62,20 @@ def list_pkg(device):
     return subprocess.check_output(listpackagescmd)
 
 def restart_adb():
-    print '\nRestart adb service ...'
+    l('Restart adb service ...')
     res = os.popen('adb kill-server').readlines()
     res = os.popen('adb start-server').readlines()
     resinfo = ''.join(res)
-    print resinfo
+    l(resinfo)
     if resinfo.find('daemon started successfully') < 0:
-        print 'Restart adb service ----- FAIL'
+        l('Restart adb service ----- FAIL')
         restart_adb()
     else:
         res = os.popen('adb devices').readlines()
         return 0
+
+def l(str):
+    common.log_info(str, gl.__logfile__)
 
 
 

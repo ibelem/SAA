@@ -35,6 +35,7 @@ import shutil, glob
 import json
 import subprocess
 import threading
+import logging
 
 
 def multi_replace(string, dic):
@@ -184,5 +185,14 @@ def parse_c_json(pathname, field):
             value = d[field]
             return value
 
+def log_info(message, file):
+    logging.basicConfig(filename=file,level=logging.INFO, format='%(asctime)s: %(message)s')
+    print message
+    logging.info(message)
+
+def log_err(err, file):
+    logging.basicConfig(filename=file,level=logging.INFO, format='%(asctime)s: %(message)s')
+    print err
+    logging.error(err)
 
 

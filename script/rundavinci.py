@@ -34,7 +34,7 @@ import time
 import threading
 #from win32api import *
 import subprocess
-import common
+import common, gl
 
 SUITEPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),os.path.pardir)
 TESTPATH = os.path.join(SUITEPATH,'tests')
@@ -42,71 +42,77 @@ SCRIPTPATH = os.path.join(SUITEPATH,'script')
 JSONPATH = os.path.join(SCRIPTPATH, 'config.json')
 DAVINCIPATH = common.parse_c_json(JSONPATH, 'davinci_path')
 
+def l(str):
+    common.log_info(str, gl.__logfile__)
+
+def lr(str):
+    common.log_err(str, gl.__logfile__)
+
 def clear_davinci_test(deviceid):
-    print '\nClean up test suite path and apk tests path:'
-    print '------------------------------------------------------------------------------------------------------------------------------------'
+    l('Clean up test suite path and apk tests path:')
+    l('------------------------------------------------------------------------------------------------------------------------------------')
     try:
         try:
             common.del_files(SUITEPATH, 'null')
-            print 'Delete null in ' + SUITEPATH + ' ----- DONE'
+            l('Delete null in ' + SUITEPATH + ' ----- DONE')
         except Exception, ex:
-            print 'Delete null file ----- FAIL', ex
+            lr(str(ex) + ' Delete null file ----- FAIL')
         try:
             common.del_files(SUITEPATH, '.png')
-            print 'Delete .png in ' + SUITEPATH + ' ----- DONE'
+            l('Delete .png in ' + SUITEPATH + ' ----- DONE')
         except Exception, ex:
-            print 'Delete .png ----- FAIL', ex
+            lr(str(ex) + ' Delete .png ----- FAIL')
         try:
             common.del_files(SUITEPATH, '.info')
-            print 'Delete .info in ' + SUITEPATH + ' ----- DONE'
+            l('Delete .info in ' + SUITEPATH + ' ----- DONE')
         except Exception, ex:
-            print 'Delete .info ----- FAIL', ex
+            lr(str(ex) + ' Delete .info ----- FAIL')
         try:
             common.del_files(SUITEPATH, '.txt')
-            print 'Delete .txt in ' + SUITEPATH + ' ----- DONE'
+            l('Delete .txt in ' + SUITEPATH + ' ----- DONE')
         except Exception, ex:
-            print 'Delete .txt ----- FAIL', ex
+            lr(str(ex) + ' Delete .txt ----- FAIL')
         try:
             common.del_files(SUITEPATH, '.log')
-            print 'Delete .log in ' + SUITEPATH + ' ----- DONE'
+            l('Delete .log in ' + SUITEPATH + ' ----- DONE')
         except Exception, ex:
-            print 'Delete .log ----- FAIL', ex
+            lr(str(ex) + ' Delete .log ----- FAIL')
 
         for i in ['.qs', '.xml','.csv', '.txt', '.log']:
             common.del_files(TESTPATH, i)
-            print 'Delete ' + i + ' in ' + TESTPATH + ' ----- DONE'
+            l('Delete ' + i + ' in ' + TESTPATH + ' ----- DONE')
 
         davinci_rnr_log_dir = common.parse_c_json(JSONPATH, 'davinci_rnr_log_dir')
         if common.find_dir(os.path.join(TESTPATH, davinci_rnr_log_dir)):
             common.del_dir(os.path.join(TESTPATH, davinci_rnr_log_dir))
-            print 'Delete folder ' + os.path.join(TESTPATH, davinci_rnr_log_dir) + ' ----- DONE'
+            l('Delete folder ' + os.path.join(TESTPATH, davinci_rnr_log_dir) + ' ----- DONE')
 
         device_id_dir = deviceid
         if common.find_dir(os.path.join(TESTPATH, device_id_dir)):
             common.del_dir(os.path.join(TESTPATH, device_id_dir))
-            print 'Delete folder ' + os.path.join(TESTPATH, device_id_dir) + ' ----- DONE'
+            l('Delete folder ' + os.path.join(TESTPATH, device_id_dir) + ' ----- DONE')
 
         if common.find_glob_path(TESTPATH + '/TestResult_*'):
             for i in common.find_glob_path(TESTPATH + '/TestResult_*'):
                 common.del_dir(i)
-            print 'Delete folder ' + i + ' ----- DONE'
+            l('Delete folder ' + i + ' ----- DONE')
     except Exception, ex:
-        print '\nDelete file or folder ----- FAIL.', ex
+        lr(str(ex) + ' Delete file or folder ----- FAIL.')
 
 def prepare_davinci_delete_default_device_cfg_txt():
     delete_default_device_cfg_txt_path = os.path.join(DAVINCIPATH, 'Scripts', 'default_device_cfg.txt')
     if common.find_file(delete_default_device_cfg_txt_path):
         common.del_file(delete_default_device_cfg_txt_path)
-        print 'Delete default_device_cfg.txt: ----- DONE'
+        l('Delete default_device_cfg.txt: ----- DONE')
     else:
-        print 'default_device_cfg.txt doesn\'t exist ----- OK'
+        l('default_device_cfg.txt doesn\'t exist ----- OK')
 
 def prepare_davinci_silent_mode():
     if common.find_file(os.path.join(DAVINCIPATH, 'Scripts', 'user_input1.txt')):
         common.copy_file(os.path.join(DAVINCIPATH, 'Scripts', 'user_input1.txt'), os.path.join(SUITEPATH, 'user_input1.txt'))
     if common.find_file(os.path.join(DAVINCIPATH, 'Scripts', 'user_input2.txt')):
         common.copy_file(os.path.join(DAVINCIPATH, 'Scripts', 'user_input2.txt'), os.path.join(SUITEPATH, 'user_input2.txt'))
-    print 'Prepare DaVinci silent mode test ----- DONE'
+    l('Prepare DaVinci silent mode test ----- DONE')
 
 def prepare_davinci_run_qs_py():
     davinci_device_environment_set = common.parse_c_json(JSONPATH, 'davinci_device_environment_set')
@@ -148,13 +154,13 @@ def prepare_davinci_run_qs_py():
 
     if common.find_file(run_qs_path):
         if common.find_text_in_file('pp_qs = "'+ power_pusher_abs_path +'"', run_qs_path) > 0:
-            print 'Set absolute path of pp_qs: ' + power_pusher_abs_path + ' ----- DONE'
+            l('Set absolute path of pp_qs: ' + power_pusher_abs_path + ' ----- DONE')
         if common.find_text_in_file('timeout = ' + davinci_timeout, run_qs_path) > 0:
-            print 'Set davinci_timeout: ' + davinci_timeout + ' ----- DONE'
+            l('Set davinci_timeout: ' + davinci_timeout + ' ----- DONE')
         if common.find_text_in_file('rerun_max = ' + davinci_rerun_max, run_qs_path) > 0:
-            print 'Set davinci_rerun_max: ' + davinci_rerun_max + ' ----- DONE'
+            l('Set davinci_rerun_max: ' + davinci_rerun_max + ' ----- DONE')
         if common.find_text_in_file('threshold = ' + davinci_battery_threshold, run_qs_path) > 0:
-            print 'Set davinci_battery_threshold: ' + davinci_battery_threshold + ' ----- DONE'
+            l('Set davinci_battery_threshold: ' + davinci_battery_threshold + ' ----- DONE')
 
 def prepare_davinci_generate_py():
     davinci_action_number = common.parse_c_json(JSONPATH, 'davinci_action_number')
@@ -184,18 +190,17 @@ def prepare_davinci_generate_py():
 
     if common.find_file(generate_path):
         if common.find_text_in_file(update_string, generate_path) > 0:
-            print 'Set davinci_action_number: ' + davinci_action_number + ' ----- DONE'
-            print 'Set davinci_click_percentage: ' + davinci_click_percentage + ' ----- DONE'
-            print 'Set davinci_swipe_percentage: ' + davinci_swipe_percentage + ' ----- DONE'
+            l('Set davinci_action_number: ' + davinci_action_number + ' ----- DONE')
+            l('Set davinci_click_percentage: ' + davinci_click_percentage + ' ----- DONE')
+            l('Set davinci_swipe_percentage: ' + davinci_swipe_percentage + ' ----- DONE')
 
 def precondition_davinci():
-    print '\nUpdate DaVinci run_qs.py and generate.py scripts base on config.json options:'
-    print '------------------------------------------------------------------------------------------------------------------------------------'
+    l('Update DaVinci run_qs.py and generate.py scripts base on config.json options:')
+    l('------------------------------------------------------------------------------------------------------------------------------------')
     prepare_davinci_delete_default_device_cfg_txt()
     prepare_davinci_silent_mode()
     prepare_davinci_run_qs_py()
     prepare_davinci_generate_py()
-    print '\n'
 
 def run_davinci(version, deviceid, arch):
     #    cmd = DAVINCIPATH + 'Scripts/run.bat ' + DAVINCIPATH + 'bin ' + TESTPATH
@@ -216,7 +221,7 @@ def run_davinci(version, deviceid, arch):
     time.sleep(5)
 
     if (not common.find_file(os.path.join(SUITEPATH, 'user_input1.txt'))) or (not common.find_file(os.path.join(SUITEPATH, 'user_input2.txt'))):
-        print 'Unable to get init config file of user_input1.txt and user_input2.txt'
+        l('Unable to get init config file: user_input1.txt and user_input2.txt')
         sys.exit(0)
 
     cmdbat = DAVINCIPATH + 'Scripts/run.bat'
@@ -229,9 +234,9 @@ def run_davinci(version, deviceid, arch):
     args7 = 'True'
     cmd = [cmdbat, args1, args2, args3, args4, args5, args6, args7]
     cmdsystem = ' '.join(cmd)
-    print 'Start to run DaVinci:'
-    print '------------------------------------------------------------------------------------------------------------------------------------'
-    print cmdsystem
+    l('Start to run DaVinci:')
+    l('------------------------------------------------------------------------------------------------------------------------------------')
+    l(cmdsystem)
     os.system(cmdsystem)
 
     #    p = subprocess.Popen(cmd, shell=True, stdout = subprocess.PIPE)
