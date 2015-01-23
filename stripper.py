@@ -6,7 +6,6 @@ import os
 import re
 
 # Remove Copyright comments in html page for W3C upstream
-
 # HTML files root folder, html files in it's folder and subfolders will be stripped
 w3c_tc_path = '/home/belem/github/SAA'
 html_path = ''  #The path of html file which will be stripped
