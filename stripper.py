@@ -1,0 +1,69 @@
+# -*- coding:utf-8 -*-
+#!/usr/bin/env python
+#!/usr/bin/python
+
+import sys
+import os
+import re
+# import logging
+# import logging.handlers
+
+# Remove Copyright comments in html page for W3C upstream
+
+# HTML files root folder, html files in it's folder and subfolders will be stripped
+w3c_tc_path = '/home/belem/github/SAA'
+html_path = ''  #The path of html file which will be stripped
+
+class FileStripper():
+    # def __init__(self):
+    # print self
+    def html_traversal(self, path):
+
+        # Traversal all files under w3c_tc_path folder and subfolders
+	for root, dirs, files in os.walk(path):
+            for fn in files:
+                html_path = root + '/' + fn
+                try:
+		    # Get all files with extension name 'html'
+                    if fn.split('.')[-1].index('py') >= 0 :
+                        print 'Ready to strip: ', html_path
+                        fs = FileStripper()
+                        fs.strip_copyright(html_path)
+                except Exception, e:
+                    print 'None py file: ', str(e), html_path, '\r\n'
+
+    def strip_copyright(self, path):
+        if not os.path.exists(path):
+            print 'Error: py file - %s doesn\'t exist.' % path
+        try:
+	    f = open(path)
+	    file_string = f.read()
+	    f.close()
+	    # print file_string 
+	   
+	    # Remove all <!-- --> areas in html page 
+	    # pattern = '<!--.*?-->'
+	    
+	    # Remove <!-- --> area in html page which including 'Copyright' info only
+	    pattern = '#.*?Copyright.*?com>'
+	    new_file_string = re.sub(re.compile(pattern, re.DOTALL), '', file_string)
+	    
+	    # Combine multiple empty lines into one empty line
+	    new_file_string = re.sub(re.compile('^[\r\n]+$', re.MULTILINE), '', new_file_string) 
+	   
+	    # Remove empty lines in file by uncommenting line below
+	    # new_contents = os.linesep.join([s for s in new_contents.splitlines() if s])	    
+	    
+	    f = open(path, 'w')
+      	    f.write(new_file_string)
+	    f.close()
+	    
+	    # print new_file_string
+	    print 'Copyright comments were stripped successfully: ', path,'\r\n'
+
+	except Exception, e:
+	    print str(e), path, '\r\n'	
+
+if __name__ == '__main__':
+    fs = FileStripper()
+    fs.html_traversal(w3c_tc_path)

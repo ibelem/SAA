@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2014 Intel Corporation.
+# Copyright (c) 2015 Intel Corporation.
 #
 # Redistribution and use in source and binary forms, with or without modification,
 # are permitted provided that the following conditions are met:
@@ -57,8 +57,8 @@ def run(version, deviceid, arch):
     rundavinci.clear_davinci_test(deviceid)
     runtimelib.install_runtimelib(version, deviceid, arch)
     #time.sleep(5)
-    #rundavinci.run_davinci(version, deviceid, arch)
-    #csvtoxml.csv_xml(version, deviceid, arch)
+    rundavinci.run_davinci(version, deviceid, arch)
+    csvtoxml.csv_xml(version, deviceid, arch)
 
 def option_check(version, deviceid, arch):
     if arch and deviceid:
@@ -105,6 +105,7 @@ def main():
     gl.__starttime__ = d.strftime('%Y-%m-%d %H:%M:%S')
     t = gl.__starttime__.replace(' ', '_').replace(':', '-')
     gl.__logfile__ = os.path.join(testresultdir, 'crosswalk_' + t + '.log')
+    common.mk_dir(testresultdir)
 
     l('Device and test build information:')
     l('------------------------------------------------------------------------------------------------------------------------------------')

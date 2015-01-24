@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2014 Intel Corporation.
+# Copyright (c) 2015 Intel Corporation.
 #
 # Redistribution and use in source and binary forms, with or without modification,
 # are permitted provided that the following conditions are met:
@@ -31,7 +31,7 @@
 import os,sys
 import socket, codecs
 from datetime import *
-import csv
+import csv, openpyxl
 import common, gl
 from lxml import etree as et
 
@@ -103,26 +103,38 @@ def csv_reader(version, deviceid, arch, filepath, exetime):
             testtime = ''
             l(c['Install'] + ' ' + c['Launch'] + ' ' + c['Random'] + ' ' + c['Back']
               + ' ' + c['Uninstall'] + ' ' + c['Logcat'] + ' ' + c['Result'] + ' ' + c['Reason'].strip())
+
+            devicemode = ''
+            try:
+                devicemode = c['Device Model']
+            except Exception, ex:
+                lr(str(ex))
+
+            application = ''
+            try:
+                application = c['Application'].decode('utf-8').replace('.apk','')
+            except Exception, ex:
+                application = c['\xef\xbb\xbfApplication'].decode('utf-8').replace('.apk','')
+            applicationname = ''
+            try:
+                applicationname = c['App name']
+            except Exception, ex:
+                lr(str(ex))
+            package = ''
+            try:
+                package = c['Package name']
+            except Exception, ex:
+                lr(str(ex))
             for i in ['Install', 'Launch', 'Random', 'Back', 'Uninstall', 'Logcat']:
                 result = c[i]
                 if result.lower() == 'skip':
                     result = 'BLOCK'
-                application = ''
-                try:
-                    application = c['Application'].decode('utf-8').replace('.apk','')
-                except Exception, ex:
-                    application = c['\xef\xbb\xbfApplication'].decode('utf-8').replace('.apk','')
-                package = ''
-                try:
-                    package = c['Package']
-                except Exception, ex:
-                    lr(str(ex))
-                insert_xml_case_result(version, deviceid, arch, q, testtime, application, package, i.lower(), result, c['Reason'].strip(), reportlink.strip())
+                insert_xml_case_result(version, deviceid, arch, q, testtime, application, applicationname, package, i.lower(), result, c['Reason'].strip(), reportlink.strip())
         copy_result(deviceid, exetime)
     else:
         l('Can\'t find file: ' + filepath)
 
-def insert_xml_case_result(version, deviceid, arch, q, testtime, application, package, step, result, failreason, reportlink):
+def insert_xml_case_result(version, deviceid, arch, q, testtime, application, applicationname, package, step, result, failreason, reportlink):
     parser = et.XMLParser(remove_blank_text=True)
     tree = et.parse(q, parser)
     #root = tree.getroot()
@@ -137,8 +149,8 @@ def insert_xml_case_result(version, deviceid, arch, q, testtime, application, pa
     testcase = et.SubElement(set, 'testcase')
     testcase.attrib['component'] = common.parse_c_json(JSONPATH, 'test_suite_category') + '/' + common.parse_c_json(JSONPATH, 'test_suite_module') + '/' + package
     testcase.attrib['execution_type'] = 'auto'
-    testcase.attrib['id'] = 'webapp_monkey_'+ application.lower() + '_' + step
-    testcase.attrib['purpose'] = 'Verify ' + step + ' step of ' + application.lower() + ' works correctly'
+    testcase.attrib['id'] = 'topapp_smoke_'+ application.lower() + '_' + step
+    testcase.attrib['purpose'] = 'Verify ' + step + ' step of ' + applicationname + ' works correctly'
     testcase.attrib['result'] = result
     #testcase.attrib['comment'] = t
     description = et.SubElement(testcase, 'description')
@@ -201,28 +213,45 @@ def generate_xml_report(version, deviceid, arch, pathname):
 def csv_insert_logcat_result(filepath, filepathnew):
     def add_logcat_record(record, result):
             record['Logcat'] = result
-    with open(filepath, "rb") as fin:
-        with open(filepathnew, "wb") as fout:
-            fields = ['Application',
-                      'App name',
-                      'Device Model', 'Android Version', 'Device Build Number', 'Package',
-                      'App Version',
-                      'Install', 'Launch', 'Random', 'Back', 'Uninstall',
-                      'Result', 'Reason', 'Link']
-            fields_new = ['Application',
-                      'App name',
-                      'Device Model', 'Android Version', 'Device Build Number', 'Package',
-                      'App Version',
-                      'Install', 'Launch', 'Random', 'Back', 'Uninstall', 'Logcat',
-                      'Result', 'Reason', 'Link']
-            reader = csv.DictReader(fin, fieldnames=fields)
-            writer = csv.DictWriter(fout, fieldnames=fields_new)
-            writer.writeheader()
-            #fout.write(",".join(fields) + '\n')
-            reader.next()
-            for record in reader:
-                add_logcat_record(record, check_logcat_result(filepath, record['Package'].replace('.apk','')))
-                writer.writerow(record)
+
+    wb = openpyxl.load_workbook(filename=filepath, use_iterators=True)
+    ws = wb.get_sheet_by_name('all app result')
+
+    fields_new = ['Application', 'App name', 'Package name', 'Device Model',
+                  'Android Version', 'Device Build Number', 'App Version',
+                  'Install', 'Launch', 'Random', 'Back', 'Uninstall', 'Logcat',
+                  'Result', 'Reason', 'Link']
+    writer = csv.DictWriter(open(filepathnew, "wb"), fieldnames=fields_new)
+    writer.writeheader()
+
+    data_dic = {}
+    for rx in range(ws.get_highest_row()):
+        temp_list = []
+        r = rx + 1
+        wapplication = ws.cell(row = r, column = 1).value
+        wappname = ws.cell(row = r, column = 2).value
+        wpackagename = ws.cell(row = r, column = 3).value
+        wdevicemodel = ws.cell(row = r, column = 4).value
+        wandroidversion = ws.cell(row = r, column = 5).value
+        wdevicebuildnumber = ws.cell(row = r, column = 6).value
+        wappversion = ws.cell(row = r, column = 7).value
+        winstall = ws.cell(row = r, column = 8).value
+        wlaunch = ws.cell(row = r, column = 9).value
+        wrandom = ws.cell(row = r, column = 10).value
+        wback = ws.cell(row = r, column = 11).value
+        wuninstall = ws.cell(row = r, column = 12).value
+        wresult = ws.cell(row = r, column = 13).value
+        wreason = ws.cell(row = r, column = 14).value
+        wlink = ws.cell(row = r, column = 15).value
+
+        wlogcat = 'Logcat'
+        if r > 1:
+            wlogcat = check_logcat_result(filepath, wpackagename)
+            temp_dict = {'Application': wapplication, 'App name': wappname, 'Package name': wpackagename, 'Device Model': wdevicemodel,
+                         'Android Version': wandroidversion, 'Device Build Number': wdevicebuildnumber, 'App Version': wappversion,
+                         'Install': winstall, 'Launch': wlaunch, 'Random': wrandom, 'Back': wback, 'Uninstall': wuninstall,
+                         'Logcat': wlogcat, 'Result': wresult, 'Reason': wreason, 'Link': wlink}
+            writer.writerow(temp_dict)
 
 def check_logcat_result(csvpath, apkpackage):
     keyword_fail = common.parse_c_json(JSONPATH, 'keyword_fail')
@@ -252,12 +281,12 @@ def csv_xml(version, deviceid, arch):
             try:
                 exetime = i.replace(TESTPATH, '').replace('\\', '').replace('TestResult_', '')
                 filepath = os.path.join(i, davincicsvfile)
-                filepathnew = filepath.replace('.csv','') + '_Add_Logcat.csv'
+                filepathnew = filepath.replace('.xlsx','') + '_Add_Logcat.csv'
                 csv_insert_logcat_result(filepath, filepathnew)
                 csv_reader(version, deviceid, arch, filepathnew, exetime)
             except Exception, ex:
                 lr(str(ex))
-        l('Completed the web app monkey tests:')
+        l('Completed the top app smoke tests:')
         l('------------------------------------------------------------------------------------------------------------------------------------')
         l('Please get full test results in ' + testresultdir)
     else:

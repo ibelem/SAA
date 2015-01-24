@@ -1,16 +1,16 @@
 {
-  "name": "Crosswalk Web App (from Play Store) Monkey Test",
+  "name": "Crosswalk Top App (from Play Store) Smoke Test",
   "version": "1.0",
   "davinci": {
     "davinci_path": "C:/Intel/BiTS/DaVinci/",
-    "davinci_rnr_log_dir": "_DaVinci_RnR_Logs",
-    "davinci_csv_file": "Smoke_Test_Summay.csv",
+    "davinci_rnr_log_dir": "_Logs",
+    "davinci_csv_file": "Smoke_Test_Summary.xlsx",
     "davinci_device_environment_set": "true",
-    "davinci_timeout": "599",
+    "davinci_timeout": "600",
     "davinci_rerun_max": "1",
     "davinci_action_number": "11",
-    "davinci_click_percentage": "80",
-    "davinci_swipe_percentage": "20",
+    "davinci_click_percentage": "88",
+    "davinci_swipe_percentage": "12",
     "davinci_battery_threshold": "10"
   },
   "runtimelib": {
@@ -18,17 +18,17 @@
     "runtimelib_apk": "XWalkRuntimeLib.apk"
   },
   "runtimelib_test_build": [
-    {"rtlib_test_build": "11.39.265.0"}
+    {"rtlib_test_build": "11.40.277.2"}
   ],
   "test_suite": {
     "test_suite_category": "Compatibility",
-    "test_suite_module": "Web App",
-    "test_suite_set_name": "Web Apps",
-    "test_suite_name": "webapp-monkey-android-tests"
+    "test_suite_module": "TopApp",
+    "test_suite_set_name": "Smoke",
+    "test_suite_name": "topapp-smoke-android-tests"
   },
   "test_result": {
-    "test_result_dir": "C:/Users/lenovo/Desktop/CCC",
-    "test_result_xml_name": "webapp-monkey-android-tests-result.xml"
+    "test_result_dir": "C:/Users/lenovo/Desktop/TopAppTestResult",
+    "test_result_xml_name": "topapp-smoke-android-tests-result.xml"
   },
   "logcat_check": [
     {"keyword_fail": "WIN DEATH"},

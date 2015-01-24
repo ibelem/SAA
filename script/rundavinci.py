@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2014 Intel Corporation.
+# Copyright (c) 2015 Intel Corporation.
 #
 # Redistribution and use in source and binary forms, with or without modification,
 # are permitted provided that the following conditions are met:
@@ -30,11 +30,17 @@
 
 import os, sys, re
 from time import sleep
-import time
+import time, csv, xlsxwriter
 import threading
 #from win32api import *
 import subprocess
 import common, gl
+
+#pip install XlsxWriter
+#pip --proxy=http://proxy.xxxx.com:911 install requests
+#pip --proxy=http://proxy.xxxx.com:911 install wheel
+#pip wheel XlsxWriter-0.6.6-py2.py3-none-any.whl
+#pip install --use-wheel --no-index --find-links=wheelhouse XlsxWriter
 
 SUITEPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),os.path.pardir)
 TESTPATH = os.path.join(SUITEPATH,'tests')
@@ -97,7 +103,7 @@ def clear_davinci_test(deviceid):
                 common.del_dir(i)
             l('Delete folder ' + i + ' ----- DONE')
     except Exception, ex:
-        lr(str(ex) + ' Delete file or folder ----- FAIL.')
+        lr(str(ex) + ' Delete file or folder ----- FAIL')
 
 def prepare_davinci_delete_default_device_cfg_txt():
     delete_default_device_cfg_txt_path = os.path.join(DAVINCIPATH, 'Scripts', 'default_device_cfg.txt')
@@ -116,13 +122,13 @@ def prepare_davinci_silent_mode():
 
 def prepare_davinci_run_qs_py():
     davinci_device_environment_set = common.parse_c_json(JSONPATH, 'davinci_device_environment_set')
-    davinci_timeout = common.parse_c_json(JSONPATH, 'davinci_timeout')
+    #davinci_timeout = common.parse_c_json(JSONPATH, 'davinci_timeout')
     davinci_rerun_max = common.parse_c_json(JSONPATH, 'davinci_rerun_max')
     davinci_battery_threshold = common.parse_c_json(JSONPATH, 'davinci_battery_threshold')
 
     run_qs_path = os.path.join(DAVINCIPATH, 'Scripts', 'run_qs.py')
     run_qs_bak_path = os.path.join(DAVINCIPATH, 'Scripts', 'run_qs_bak.py')
-    power_pusher_abs_path = os.path.join(DAVINCIPATH, 'Scripts') + '/power_pusher.qs'
+    #power_pusher_abs_path = os.path.join(DAVINCIPATH, 'Scripts') + '/power_pusher.qs'
 
     if not common.find_file(run_qs_bak_path):
         common.copy_file(run_qs_path, run_qs_bak_path)
@@ -133,9 +139,10 @@ def prepare_davinci_run_qs_py():
         f_bak = open(run_qs_bak_path, "r+")
         target_file = open(run_qs_path, 'w')
         #pp_qs = "power_pusher.qs" => pp_qs = "ABSOLUTE_PATH/power_pusher.qs"
-        g = re.sub(r'pp_qs = "power_pusher.qs"', 'pp_qs = "'+ power_pusher_abs_path +'"', f_bak.read())
+        g = f_bak.read()
+        #g = re.sub(r'pp_qs = "power_pusher.qs"', 'pp_qs = "'+ power_pusher_abs_path +'"', g)
         # RunDavinci(device_name, qs_name) in run_qs.py
-        g = re.sub(r'timeout = 600', 'timeout = ' + davinci_timeout, g)
+        #g = re.sub(r'timeout = 600', 'timeout = ' + davinci_timeout, g)
         #g = re.sub(r'timeout = 1000', 'timeout = ' + davinci_timeout, g)
         # RunTest(is_agressive) in run_qs.py
         g = re.sub(r'rerun_max = 3', 'rerun_max = ' + davinci_rerun_max, g)
@@ -148,21 +155,105 @@ def prepare_davinci_run_qs_py():
             g = g.replace('PrepareBeforeSmokeTest(all_dev)', '#PrepareBeforeSmokeTest(all_dev)')
         #Strength Restart_adb() in run_qs.py
         g = g.replace('PrintAndLogErr("  - Please make sure adb service is OK.")', 'PrintAndLogErr("  - Please make sure adb service is OK.")\n        Restart_adb()')
+        #Disable manual to choose reference devices in run_qs.py
+        l('Disable manual to choose reference devices ----- DONE')
+        g = re.sub(r'ref_dev_list = raw_input', '#ref_dev_list = raw_input', g)
+        g = re.sub(r'if ref_dev_list == "0":', 'ref_dev_list = "0"\n                if ref_dev_list == "0":', g)
+        #Disable manual to choose device group in run_qs.py
+        l('Disable manual to choose device group ----- DONE')
+        g = re.sub(r'selection_choice = raw_input', '#selection_choice = raw_input', g)
+        g = re.sub(r'if selection_choice == "":', 'selection_choice = "0"\n            if selection_choice == "":', g)
         target_file.write(g)
         f_bak.close()
         target_file.close()
 
     if common.find_file(run_qs_path):
-        if common.find_text_in_file('pp_qs = "'+ power_pusher_abs_path +'"', run_qs_path) > 0:
-            l('Set absolute path of pp_qs: ' + power_pusher_abs_path + ' ----- DONE')
-        if common.find_text_in_file('timeout = ' + davinci_timeout, run_qs_path) > 0:
-            l('Set davinci_timeout: ' + davinci_timeout + ' ----- DONE')
+        #if common.find_text_in_file('pp_qs = "'+ power_pusher_abs_path +'"', run_qs_path) > 0:
+        #    l('Set absolute path of pp_qs: ' + power_pusher_abs_path + ' ----- DONE')
+        #if common.find_text_in_file('timeout = ' + davinci_timeout, run_qs_path) > 0:
+        #    l('Set davinci_timeout: ' + davinci_timeout + ' ----- DONE')
         if common.find_text_in_file('rerun_max = ' + davinci_rerun_max, run_qs_path) > 0:
             l('Set davinci_rerun_max: ' + davinci_rerun_max + ' ----- DONE')
         if common.find_text_in_file('threshold = ' + davinci_battery_threshold, run_qs_path) > 0:
             l('Set davinci_battery_threshold: ' + davinci_battery_threshold + ' ----- DONE')
+        if common.find_text_in_file('ref_dev_list = "0"', run_qs_path) > 0:
+            l('Set reference devices: 0 ----- DONE')
+        if common.find_text_in_file('selection_choice = "0"', run_qs_path) > 0:
+            l('Set device group selection choice: 0 ----- DONE')
 
 def prepare_davinci_generate_py():
+    rtlibpkg = common.parse_c_json(JSONPATH, 'runtimelib_package')
+    rtlibapk = common.parse_c_json(JSONPATH, 'runtimelib_apk')
+    davinci_action_number = common.parse_c_json(JSONPATH, 'davinci_action_number')
+    davinci_click_percentage = common.parse_c_json(JSONPATH, 'davinci_click_percentage')
+    davinci_swipe_percentage = common.parse_c_json(JSONPATH, 'davinci_swipe_percentage')
+
+    generate_path = os.path.join(DAVINCIPATH, 'Scripts', 'generate.py')
+    generate_bak_path = os.path.join(DAVINCIPATH, 'Scripts', 'generate_bak.py')
+
+    if not common.find_file(generate_bak_path):
+        common.copy_file(generate_path, generate_bak_path)
+        if common.find_file(generate_bak_path):
+            common.remove_glob_path(generate_path)
+
+    if common.find_file(generate_bak_path):
+        f_bak = open(generate_bak_path, "r+")
+        target_file = open(generate_path, 'w')
+        g = f_bak.read()
+        #Disable manual to confirm settings in SmokeConfig.csv in generate.py
+        l('Disable manual to confirm settings in SmokeConfig.csv ----- DONE')
+        g = re.sub(r'config_done = raw_input', '#config_done = raw_input', g)
+        target_file.write(g)
+        f_bak.close()
+        target_file.close()
+
+    smokeconfig_path = os.path.join(DAVINCIPATH, 'Scripts', 'SmokeConfig.csv')
+    smokeconfig_bak_path = os.path.join(DAVINCIPATH, 'Scripts', 'SmokeConfig_bak.csv')
+
+    if not common.find_file(smokeconfig_bak_path):
+        common.copy_file(smokeconfig_path, smokeconfig_bak_path)
+        if common.find_file(smokeconfig_bak_path):
+            common.remove_glob_path(smokeconfig_path)
+
+    lists = []
+    with open(smokeconfig_bak_path, 'rb') as csvfile:
+        reader = csv.reader(csvfile, delimiter=';',  quotechar = '|')
+        for row in reader:
+            lists.append(row)
+
+    with open(smokeconfig_path, 'wb') as csvfile:
+        writer = csv.writer(csvfile, delimiter = ';', quotechar = '|',  quoting=csv.QUOTE_MINIMAL)
+        for row in lists:
+            t = 'Total Action Number (click action number + swipe action number):,'
+            if str(row[0]).find(t) >= 0:
+                row[0] = row[0].replace('10','')
+                row[0] = row[0].replace(t, t + davinci_action_number)
+            t = 'Click Percentage (click action number / total action number) (%):,'
+            if str(row[0]).find(t) >= 0:
+                row[0] = row[0].replace('80','')
+                row[0] = row[0].replace(t, t + davinci_click_percentage)
+            t = 'Swipe Percentage (swipe action number / total action number) (%):,'
+            if str(row[0]).find(t) >= 0:
+                row[0] = row[0].replace('20','')
+                row[0] = row[0].replace(t, t + davinci_swipe_percentage)
+            t = 'Camera Mode (ScreenCap or Disabled):,ScreenCap'
+            if str(row[0]).find(t) >= 0:
+                row[0] = row[0].replace(',ScreenCap',',Disabled')
+            t = 'Test login feature or not (Yes/No):,Yes'
+            if str(row[0]).find(t) >= 0:
+                row[0] = row[0].replace('Test login feature or not (Yes/No):,Yes','Test login feature or not (Yes/No):,No')
+            if str(row[0]).find('with semicolons):,') >= 0:
+                row[0] = row[0].replace('with semicolons):,', 'with semicolons):,' + rtlibpkg)
+            writer.writerow(row)
+
+    l('Set davinci_action_number: ' + davinci_action_number + ' ----- DONE')
+    l('Set davinci_click_percentage: ' + davinci_click_percentage + ' ----- DONE')
+    l('Set davinci_swipe_percentage: ' + davinci_swipe_percentage + ' ----- DONE')
+    l('Disabled Screen Capture: ----- DONE')
+    l('Disabled login feature: ----- DONE')
+    l('Set package name of '+ rtlibapk + ': ' + rtlibpkg + ' for logcat capturing ----- DONE')
+
+def prepare_davinci_generate_py_before_2dot3():
     davinci_action_number = common.parse_c_json(JSONPATH, 'davinci_action_number')
     davinci_click_percentage = common.parse_c_json(JSONPATH, 'davinci_click_percentage')
     davinci_swipe_percentage = common.parse_c_json(JSONPATH, 'davinci_swipe_percentage')
@@ -208,14 +299,13 @@ def run_davinci(version, deviceid, arch):
     #    t = MyThread(cmd)
     #    t.start()
 
-    #    set currentFolder=%~dp0
-    #    set DaVinciHome=%~1
-    #    set QScriptFolder=%~2
-    #    set CameraMode=%3
-    #    set videoRecording=%4
-    #    set relaunch=%5
-    #    set aggressive=%6
-    #    set SilentMode=%7
+    #set currentFolder=%~dp0
+    #set DaVinciHome=%~1
+    #set QScriptFolder=%~2
+    #set CameraMode=%3
+    #set aggressive=%4
+    #set SilentMode=%5
+    #set FileList=%6
 
     precondition_davinci()
     time.sleep(5)
@@ -227,12 +317,12 @@ def run_davinci(version, deviceid, arch):
     cmdbat = DAVINCIPATH + 'Scripts/run.bat'
     args1 = DAVINCIPATH + 'bin'
     args2 = TESTPATH
-    args3 = 'ScreenCap'
+    args3 = 'False'
     args4 = 'False'
-    args5 = 'False'
-    args6 = 'False'
-    args7 = 'True'
-    cmd = [cmdbat, args1, args2, args3, args4, args5, args6, args7]
+    args5 = 'True'
+    args6 = ''
+
+    cmd = [cmdbat, args1, args2, args3, args4, args5, args6]
     cmdsystem = ' '.join(cmd)
     l('Start to run DaVinci:')
     l('------------------------------------------------------------------------------------------------------------------------------------')
