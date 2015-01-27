@@ -289,7 +289,7 @@ def run_davinci(version, deviceid, arch):
     cmdbat = DAVINCIPATH + 'Scripts/run.bat'
     args1 = DAVINCIPATH + 'bin'
     args2 = TESTPATH
-    args3 = 'False'
+    args3 = 'ScreenCap'
     args4 = 'False'
     args5 = 'True'
     args6 = ''

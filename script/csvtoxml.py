@@ -34,6 +34,7 @@ def copy_result(deviceid, exetime):
         common.mk_dir(testresultdir)
     try:
         common.copy_tree(os.path.join(TESTPATH, deviceid), os.path.join(testresultdir, deviceid))
+        l('Copied ' + deviceid + ' to: '  + testresultdir)
     except Exception, ex:
         common.copy_files(os.path.join(TESTPATH, deviceid), os.path.join(testresultdir, deviceid))
 
@@ -41,18 +42,21 @@ def copy_result(deviceid, exetime):
     tr = 'TestResult_' + exetime
     try:
         common.copy_tree(os.path.join(TESTPATH, tr), os.path.join(testresultdir, tr))
+        l('Copied ' + tr + ' to: '  + testresultdir)
     except Exception, ex:
         common.copy_files(os.path.join(TESTPATH, tr), os.path.join(testresultdir, tr))
 
     # Copy _DaVinci_RnR_Logs of DaVinci from <test_suite>/tests to <test_result_dir> defined in config.json
     try:
         common.copy_tree(os.path.join(TESTPATH, rnr), os.path.join(testresultdir, rnr))
+        l('Copied ' + rnr + ' to: '  + testresultdir)
     except Exception, ex:
         common.copy_files(os.path.join(TESTPATH, rnr), os.path.join(testresultdir, rnr))
 
     # Copy result_<date>_<time>.log of DaVinci from <test_suite>/result to <test_result_dir> defined in config.json
     try:
         common.copy_tree(RESULTPATH, testresultdir)
+        l('Copied result_<date>_<time>.log to: '  + testresultdir)
     except Exception, ex:
         common.copy_files(RESULTPATH, testresultdir)
 
@@ -64,6 +68,7 @@ def csv_reader(version, deviceid, arch, filepath, exetime):
         common.mk_dir(p)
 
         q = os.path.join(p, common.parse_c_json(JSONPATH, 'test_result_xml_name'))
+
         generate_xml_report(version, deviceid, arch, q)
 
         dreader = csv.DictReader(open(filepath))
@@ -89,17 +94,19 @@ def csv_reader(version, deviceid, arch, filepath, exetime):
                 application = c['\xef\xbb\xbfApplication'].decode('utf-8').replace('.apk','')
             applicationname = ''
             try:
-                applicationname = c['App name']
+                applicationname = c['App name'].decode('utf-8')
             except Exception, ex:
                 lr(str(ex))
             package = ''
             try:
-                package = c['Package name']
+                package = c['Package name'].decode('utf-8')
             except Exception, ex:
                 lr(str(ex))
             for i in ['Install', 'Launch', 'Random', 'Back', 'Uninstall', 'Logcat']:
                 result = c[i]
                 if result.lower() == 'skip':
+                    result = 'BLOCK'
+                if result.lower() == 'warning':
                     result = 'BLOCK'
                 insert_xml_case_result(version, deviceid, arch, q, testtime, application, applicationname, package, i.lower(), result, c['Reason'].strip(), reportlink.strip())
         copy_result(deviceid, exetime)
@@ -117,7 +124,6 @@ def insert_xml_case_result(version, deviceid, arch, q, testtime, application, ap
         t = t
     else:
         t = reportlink
-
     testcase = et.SubElement(set, 'testcase')
     testcase.attrib['component'] = common.parse_c_json(JSONPATH, 'test_suite_category') + '/' + common.parse_c_json(JSONPATH, 'test_suite_module') + '/' + package
     testcase.attrib['execution_type'] = 'auto'
@@ -216,14 +222,82 @@ def csv_insert_logcat_result(filepath, filepathnew):
         wreason = ws.cell(row = r, column = 14).value
         wlink = ws.cell(row = r, column = 15).value
 
+        if winstall:
+            winstall = winstall.encode('utf-8').strip()
+        else:
+            winstall = ''
+        if wlaunch:
+            wlaunch = wlaunch.encode('utf-8').strip()
+        else:
+            wlaunch = ''
+        if wrandom:
+            wrandom = wrandom.encode('utf-8').strip()
+        else:
+            wrandom = ''
+        if wback:
+            wback = wback.encode('utf-8').strip()
+        else:
+            wback = ''
+        if wuninstall:
+            wuninstall = wuninstall.encode('utf-8').strip()
+        else:
+            wuninstall = ''
+        if wresult:
+            wresult = wresult.encode('utf-8').strip()
+        else:
+            wresult = ''
+        if wapplication:
+            wapplication = wapplication.encode('utf-8').strip()
+        else:
+            wapplication = ''
+        if wappname:
+            wappname = wappname.encode('utf-8').strip()
+        else:
+            wappname = ''
+        if wpackagename:
+            wpackagename = wpackagename.encode('utf-8').strip()
+        else:
+            wpackagename = ''
+        if wdevicemodel:
+            wdevicemodel = wdevicemodel.encode('utf-8').strip()
+        else:
+            wdevicemodel = ''
+        if wandroidversion:
+            wandroidversion = wandroidversion.encode('utf-8').strip()
+        else:
+            wandroidversion = ''
+        if wdevicebuildnumber:
+            wdevicebuildnumber = wdevicebuildnumber.encode('utf-8').strip()
+        else:
+            wdevicebuildnumber = ''
+        if wappversion:
+            wappversion = wappversion.encode('utf-8').strip()
+        else:
+            wappversion = ''
+        if wreason:
+            wreason = wreason.encode('utf-8').strip()
+        else:
+            wreason = ''
+        if wlink:
+            wlink = wlink.encode('utf-8').strip()
+        else:
+            wlink = ''
+
         wlogcat = 'Logcat'
+
         if r > 1:
             wlogcat = check_logcat_result(filepath, wpackagename)
+            if wlogcat:
+                wlogcat = wlogcat.encode('utf-8').strip()
+            else:
+                wlogcat = ''
+
             temp_dict = {'Application': wapplication, 'App name': wappname, 'Package name': wpackagename, 'Device Model': wdevicemodel,
                          'Android Version': wandroidversion, 'Device Build Number': wdevicebuildnumber, 'App Version': wappversion,
                          'Install': winstall, 'Launch': wlaunch, 'Random': wrandom, 'Back': wback, 'Uninstall': wuninstall,
                          'Logcat': wlogcat, 'Result': wresult, 'Reason': wreason, 'Link': wlink}
             writer.writerow(temp_dict)
+    l('CSV with logcat results added.')
 
 def check_logcat_result(csvpath, apkpackage):
     keyword_fail = common.parse_c_json(JSONPATH, 'keyword_fail')

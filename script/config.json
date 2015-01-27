@@ -5,7 +5,7 @@
     "davinci_path": "C:/Intel/BiTS/DaVinci/",
     "davinci_rnr_log_dir": "_Logs",
     "davinci_csv_file": "Smoke_Test_Summary.xlsx",
-    "davinci_device_environment_set": "true",
+    "davinci_device_environment_set": "false",
     "davinci_timeout": "600",
     "davinci_rerun_max": "1",
     "davinci_action_number": "11",
